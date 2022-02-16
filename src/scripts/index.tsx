@@ -1,15 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import BaseTable, { AutoResizer, Column } from 'react-base-table'
 import { CommentViewItem } from '../types/CommentViewItem';
 import { NicoUser } from '../types/NicoUser';
 import { useNicoLive } from './hooks/useNicoLive';
-import { calcDateToFomat, createIconUrl, loadUserCotehan as getUserKotehan, saveUserKotehan } from './util/funcs';
-import { ChatData } from '../types/commentWs/CommentData';
+import { calcDateToFomat, createIconUrl, loadUserCotehan, saveUserKotehan } from './util/funcs';
+import { ChatData } from '../types/commentWs/ChatData';
+import { getNicoUserName } from './util/nico';
+import { CommentWebSocket } from './common/CommentWebSocket';
 
 import 'react-base-table/styles.css';
 import '../styles/index.css';
-import { getNicoUserName } from './util/nico';
 
 const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, tableHeight: number }) =>
   <BaseTable<CommentViewItem>
@@ -18,7 +19,7 @@ const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, t
     width={props.tableWidth}
     height={props.tableHeight}
     getScrollbarSize={() => 10}
-    // overlayRenderer={<div>HELLO</div>}
+  // overlayRenderer={<div>HELLO</div>}
   >
     <Column flexShrink={0} resizable={true} className="column_no"
       key="no" dataKey="no" title="コメ番" width={65}
@@ -50,7 +51,7 @@ function CommentViewer(props: {}) {
   const [commentDatas, setCommentDatas] = useState<ChatData[]>([]);
   const [users, setUsers] = useState<{ [key: string]: NicoUser }>({});
 
-  const { commentMessage: commentMessage, systemWs, commentWs } = useNicoLive(connectingUrl);
+  const { commentMessage, systemWs, commentWs } = useNicoLive(connectingUrl);
 
   /**
    * ユーザーにコテハンをセットする
@@ -62,7 +63,7 @@ function CommentViewer(props: {}) {
   function setKotehan(userId: string, kotehan: string | undefined, kotehanNo: number, isSave: boolean) {
     setUsers(oldUsers => {
       // 多分ない
-      if(oldUsers[userId] == null) {
+      if (oldUsers[userId] == null) {
         console.log("=========================================");
         console.log("これが表示されたら、index.tsxのsetKotehan().の該当箇所のコメントアウトを外す");
         console.log("これが表示されたら、index.tsxのsetKotehan().の該当箇所のコメントアウトを外す");
@@ -72,7 +73,7 @@ function CommentViewer(props: {}) {
       // // oldUsers に userId のデータがない場合がある
       // if (oldUsers[userId] == null) {
       //   console.log("KOTEHAN RELOAD");
-        
+
       //   setTimeout(() => setKotehan(userId, kotehan, kotehanNo, isSave), 1000);
       //   return oldUsers;
       // }
@@ -138,7 +139,7 @@ function CommentViewer(props: {}) {
         if (!user.anonymous) setIconUrl(parseInt(user.userId));
 
         // ユーザー名取得
-        getUserKotehan(user.userId, user.anonymous)
+        loadUserCotehan(user.userId, user.anonymous)
           .then(kotehan => {
             if (kotehan != null)        // chrome.storage.localから取得
               setKotehan(user.userId, kotehan, -1, false);
@@ -169,10 +170,16 @@ function CommentViewer(props: {}) {
           return { ...oldUsers, [user.userId]: user };
         });
       }
+    } else if ("ping" in commentMessage) {
+      const ping = commentMessage.ping;
+    } else if ("thread" in commentMessage) {
+      const thread = commentMessage.thread;
+    } else {
+      console.log(`${CommentWebSocket.name} が受け取ったデータは、開発者がまだ知らない形式でした。`);
+      console.log("======================= new Type =======================");
+      console.log(commentMessage);
+      console.log("======================= new Type =======================");
     }
-    // else if("ping" in message) {
-    // }else if("thread" in message) {
-    // }
   }, [commentMessage]);
 
   const comments = commentDatas.map((chat) => {

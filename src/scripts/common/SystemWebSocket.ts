@@ -91,14 +91,18 @@ export class SystemWebSocket {
     } else if (systemJson.type === "schedule") {
       this._liveStartTime ??= new Date(systemJson.data.begin);
       this._liveEndTime = new Date(systemJson.data.end);
+    } else if (systemJson.type === "getAkashic") {
+    } else if (systemJson.type === "akashic") {
+    } else if (systemJson.type === "seat") {
+    } else if (systemJson.type === "serverTime") {
+    } else if (systemJson.type === "statistics") {
+    } else if (systemJson.type === "stream") {
+    } else {
+      console.log(`${SystemWebSocket.name} が受け取ったデータは、開発者がまだ知らない形式でした。`);
+      console.log("======================= new Type =======================");
+      console.log(systemJson);
+      console.log("======================= new Type =======================");
     }
-    // } else if (systemJson.type === "getAkashic") {
-    // } else if (systemJson.type === "akashic") {
-    // } else if (systemJson.type === "seat") {
-    // } else if (systemJson.type === "serverTime") {
-    // } else if (systemJson.type === "statistics") {
-    // } else if (systemJson.type === "stream") {
-    // }
   }
 
   /** システムセッションへメッセージを送る */

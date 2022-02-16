@@ -1,4 +1,4 @@
-import { ChatData } from "./CommentData";
+import { ChatData } from "./ChatData";
 import { CommentPingData } from "./CommentPingData";
 import { ThreadData } from "./ThreadData";
 

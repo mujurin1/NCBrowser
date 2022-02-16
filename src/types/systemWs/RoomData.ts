@@ -17,7 +17,7 @@ export type RoomData = {
     isFirst: boolean;
     /** ？ "waybackkey" */
     waybackkey: string;
-    /** commentChat.vpos の基準時刻(枠開始時刻？) */
+    /** ChatData.vpos の基準時刻(枠開始時刻？) */
     vposBaseTime: string;
   }
 }

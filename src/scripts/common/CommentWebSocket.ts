@@ -1,4 +1,3 @@
-import { ChatData } from "../../types/commentWs/CommentData";
 
 /**
  * ニコ生のコメント取得ウェブソケットに関するクラス
