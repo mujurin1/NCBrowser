@@ -1,4 +1,4 @@
-import { sleep } from "./funcs";
+import { getHttpText, sleep } from "./funcs";
 
 /* 
  * ニコニコのサイトからデータを取得する関数たち
@@ -21,17 +21,14 @@ function chainTask(func: () => void) {
  * @param url ページURL
  * @param recursive false
  * @returns Promise<URLのドキュメント>
+ * @throws HttpStatusError 取得先の応答が異常だった
  */
 export function getHTML(url: string, recursive: boolean = false): Promise<Document> {
   return recursive
-    ? fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error(`url:${url} の応答が異常でした。\nstatus code: ${res.status}`);
-        return res.text();
-      })
-      .then(html => {
+    ? getHttpText(url)
+      .then(text => {
         const parser = new DOMParser();
-        return parser.parseFromString(html, "text/html");
+        return parser.parseFromString(text, "text/html");
       })
     : new Promise(resolve =>
       chainTask(() => resolve(getHTML(url, true))));
@@ -42,20 +39,44 @@ export function getHTML(url: string, recursive: boolean = false): Promise<Docume
  * @param userId ニコニコユーザーID
  * @param recursive false
  * @returns Promise<ユーザー名>
+ * @throws HttpStatusError 取得先の応答が異常だった
  */
 export function getNicoUserName(userId: string, recursive: boolean = false): Promise<string> {
   return recursive
-    ? fetch(`https://www.nicovideo.jp/user/${userId}/video?rss=2.0`)
-      .then(res => {
-        if (!res.ok) throw new Error(`ユーザー名の取得に失敗しました。\nuserId: ${userId}\nstatus code: ${res.status}`);
-        return res.text();
-      })
-      .then(xml => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xml, "application/xml");
-        return doc.getElementsByTagName("dc:creator")[0].innerHTML;
-      })
+    ? getHttpText(`https://www.nicovideo.jp/user/${userId}/video?rss=2.0`)
+    .then(text => {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, "application/xml");
+      return xml.getElementsByTagName("dc:creator")[0].innerHTML;
+    })
     : new Promise(resolve =>
       chainTask(() => resolve(getNicoUserName(userId, true))));
 }
 
+/**
+ * アカウントIDからアカウントアイコンURLを生成する
+ */
+export function createNicoUserIconUrl(id: number): string {
+  return `https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/${Math.floor(id / 10000)}/${id}.jpg`;
+}
+
+const defaultIconUrl = "https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank.jpg";
+
+/**
+ * アカウントIDからそのユーザーのアイコンURLを取得する
+ * @param userId ユーザーID（数値）
+ * @returns そのユーザーのアイコンURL
+ */
+export function getNicoUserIconUrl(userId: number): Promise<string> {
+  // この関数はAPIを利用するわけでは無いので、chainTaskしない
+  const iconUrl = createNicoUserIconUrl(userId);
+  return fetch(iconUrl)
+    .then(res => {
+      return res.ok ? iconUrl : defaultIconUrl;
+    })
+    .catch(e => {
+      // そもそもHTTP通信が成立しなかった？
+      console.log(e);
+      return defaultIconUrl;
+    });
+}

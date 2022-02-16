@@ -1,6 +1,7 @@
 import { RoomData } from "../../types/systemWs/RoomData";
 import { SystemPingData } from "../../types/systemWs/SystemPingData";
 import { SystemWsMessage } from "../../types/systemWs/SystemWsMessage";
+import { logger } from "../util/logging";
 
 /**
  * システムウェブソケットに関するクラス
@@ -98,16 +99,16 @@ export class SystemWebSocket {
     } else if (systemJson.type === "statistics") {
     } else if (systemJson.type === "stream") {
     } else {
-      console.log(`${SystemWebSocket.name} が受け取ったデータは、開発者がまだ知らない形式でした。`);
-      console.log("======================= new Type =======================");
-      console.log(systemJson);
-      console.log("======================= new Type =======================");
+      logger.warn(
+        `${SystemWebSocket.name} が受け取ったデータは、開発者がまだ知らない形式でした
+        ${systemJson}`
+      );
     }
   }
 
   /** システムセッションへメッセージを送る */
   private doSendSystem(message: string) {
-    console.log(`SENT TO THE SYSTEM SERVER: ${message}`);
+    logger.info(`SENT TO THE SYSTEM SERVER: ${message}`);
     this._ws.send(message);
   }
 

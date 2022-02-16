@@ -1,3 +1,4 @@
+import { logger } from "../util/logging";
 
 /**
  * ニコ生のコメント取得ウェブソケットに関するクラス
@@ -36,7 +37,7 @@ export class CommentWebSocket {
 
   // コメントセッションへメッセージを送るための関数
   private doSendComment(message: string) {
-    console.log(`SENT TO THE CHAT SERVER: ${message}`);
+    logger.info(`SENT TO THE COMMENT SERVER\n${message}`);
     this.ws.send(message);
   }
 }

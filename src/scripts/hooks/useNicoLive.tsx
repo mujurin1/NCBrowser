@@ -5,6 +5,7 @@ import { SystemWebSocket } from '../common/SystemWebSocket';
 import { CommentWebSocket } from '../common/CommentWebSocket';
 import { CommentWsMessage } from '../../types/commentWs/CommentWsMessage';
 import { getHTML } from '../util/nico';
+import { logger } from '../util/logging';
 
 type useNicoLiveReturns = {
   commentMessage: CommentWsMessage,
@@ -23,10 +24,10 @@ export function useNicoLive(liveUrl: string): useNicoLiveReturns {
 
   function readyConnectCommentWs(commentWsUrl: string, getCommentStartMessage: string) {
     const _commentWs = new CommentWebSocket(commentWsUrl, getCommentStartMessage);
-    _commentWs.onOpenWsCallback = () => console.log("コメント用ウェブソケット 接続");
+    _commentWs.onOpenWsCallback = () => logger.info("コメント用ウェブソケット 接続");
     _commentWs.onMessageWsCallback = ev => receiveCommentWsMessage(ev);
-    _commentWs.onCloseWsCallback = () => console.log("コメント用ウェブソケット 終了");
-    _commentWs.onErrorWsCallback = ev => console.log(`コメント用ウェブソケット エラー: ${ev}`);
+    _commentWs.onCloseWsCallback = () => logger.info("コメント用ウェブソケット 終了");
+    _commentWs.onErrorWsCallback = ev => logger.error(`コメント用ウェブソケット エラー\n${ev}`);
     setCommentWs(_commentWs);
   }
   function receiveCommentWsMessage(ev: MessageEvent) {
@@ -59,14 +60,14 @@ export function useNicoLive(liveUrl: string): useNicoLiveReturns {
         const user_id: string = embeddedData.user.id ?? "guest";
 
         const _systemWs = new SystemWebSocket(url_system, user_id);
-        _systemWs.onOpenWsCallback = () => console.log("システム用ウェブソケット 接続");
-        _systemWs.onMessageWsCallback = ev => console.log(`システム用ウェブソケット 受信: ${ev.data}`);
-        _systemWs.onCloseWsCallback = () => console.log("システム用ウェブソケット 終了");
-        _systemWs.onErrorWsCallback = ev => console.log(`システム用ウェブソケット エラー: ${ev}`);
+        _systemWs.onOpenWsCallback = () => logger.info("システム用ウェブソケット 接続");
+        _systemWs.onMessageWsCallback = ev => logger.info(`システム用ウェブソケット 受信: ${ev.data}`);
+        _systemWs.onCloseWsCallback = () => logger.info("システム用ウェブソケット 終了");
+        _systemWs.onErrorWsCallback = ev => logger.error(`システム用ウェブソケット エラー\n${ev}`);
         _systemWs.readyConnectCallback = (url, startMsg) => readyConnectCommentWs(url, startMsg);
         setSystemWs(_systemWs);
       })
-      .catch(e => console.log(`get HTML Error: ${e}`));
+      .catch(e => logger.error(`get HTML Error: ${e}`));
     return () => {
       // ウェブソケットを閉じる処理
     }

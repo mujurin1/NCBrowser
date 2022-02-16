@@ -1,3 +1,4 @@
+import { HttpStatusError } from "../common/errors";
 
 /**
  * 入力内容の取得・チェック
@@ -31,10 +32,17 @@ export function calcDateToFomat(a: Date, b: Date): string {
 }
 
 /**
- * アカウントIDからアカウントアイコンURLを生成する
+ * URLからページのテキストを取得する
+ * @param url テキスト取得先
+ * @returns Promise<テキスト>
+ * @throws HttpStatusError 取得先の応答が異常だった
  */
-export function createIconUrl(id: number): string {
-  return `https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/${Math.floor(id / 10000)}/${id}.jpg`;
+export function getHttpText(url: string): Promise<string> {
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) throw new HttpStatusError(res.url, res.status);
+      return res.text();
+    });
 }
 
 /* ユーザーコテハン保存・取得
@@ -68,7 +76,7 @@ export function loadUserCotehan(userId: string, isAnonymouse: boolean): Promise<
  * @param isAnonymouse 取得するユーザーは184か
  */
 export function saveUserKotehan(userId: string, kotehan: string | undefined, isAnonymouse: boolean): Promise<void> {
-  if(kotehan == null) {
+  if (kotehan == null) {
     removeUserKotehan(userId, isAnonymouse);
     return;
   }
