@@ -45,6 +45,28 @@ export function getHttpText(url: string): Promise<string> {
     });
 }
 
+/**
+ * 文字列からコテハンを取得する
+ * @param str 文字列
+ * @returns
+ *   コテハンが存在すれば1文字以上の文字列  
+ *   存在しなければ空の文字列  
+ *   コテハンを削除するなら`undefined`
+ */
+export function parseKotehan(str: string): string | undefined {
+  let _content = str.replace("＠", "@").replace("　", " ");
+  // 最初に見つかった"@"以降の文字を調べる
+  const index = _content.indexOf("@");
+  if (index < 0 || index >= _content.length)
+    return "";
+  // "@"の次が空白なら、コテハン削除
+  if (_content[index + 1] == " ") {
+    return undefined;
+  }
+  return _content.substring(index + 1, _content.length).split(" ")[0];
+}
+
+
 /* ユーザーコテハン保存・取得
 {
   "realUserData": {

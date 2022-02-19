@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import BaseTable, { AutoResizer, Column } from 'react-base-table'
+import { useRecoilState, RecoilRoot, atom, selectorFamily, useRecoilValue } from 'recoil';
+
 import { CommentViewItem } from '../types/CommentViewItem';
-import { NicoUser } from '../types/NicoUser';
 import { useNicoLive } from './hooks/useNicoLive';
-import { calcDateToFomat, loadUserCotehan, saveUserKotehan } from './util/funcs';
+import { calcDateToFomat, loadUserCotehan, parseKotehan } from './util/funcs';
 import { ChatData } from '../types/commentWs/ChatData';
-import { getNicoUserIconUrl, getNicoUserName } from './util/nico';
 import { CommentWebSocket } from './common/CommentWebSocket';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { usersState, useSetIconUrl, useSetKotehan, useSetKotehanFromNicoUserPage } from './data/users';
+import { logger } from './util/logging';
 
 import 'react-base-table/styles.css';
 import '../styles/index.css';
-import { logger } from './util/logging';
 
 const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, tableHeight: number }) =>
   <BaseTable<CommentViewItem>
@@ -25,18 +27,18 @@ const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, t
     <Column flexShrink={0} resizable={true} className="column_no"
       key="no" dataKey="no" title="コメ番" width={65}
     />
-    <Column flexShrink={0} resizable={true} className="column_icon"
+    <Column<CommentViewItem> flexShrink={0} resizable={true} className="column_icon"
       key="icon" dataKey="iconUrl"
       title="アイコン" width={50}
       cellRenderer={
-        ({ cellData: iconUrl }) =>
-          iconUrl == "NOT FOUND" ? <></> : <img src={iconUrl}></img>
+        ({ rowData }) =>
+          rowData.anonymous ? <></> : <img src={rowData.iconUrl}></img>
       }
     />
     <Column<CommentViewItem> flexShrink={0} resizable={true} key="userName" dataKey="userName"
       title="ユーザー名" width={100}
       cellRenderer={({ cellData, rowData }) =>
-        <div className="not_estimate">{cellData ?? rowData.userId}</div>}
+        <div className="not_estimate">{rowData.kotehan ?? rowData.userId}</div>}
     />
     <Column flexShrink={0} resizable={true} className="column_time"
       key="time" dataKey="time" title="時間" width={50}
@@ -50,65 +52,12 @@ function CommentViewer(props: {}) {
   const [liveUrl, setLiveUrl] = useState("https://live.nicovideo.jp/watch/co3860320");
   const [connectingUrl, setConnectingUrl] = useState<string>();
   const [commentDatas, setCommentDatas] = useState<ChatData[]>([]);
-  const [users, setUsers] = useState<{ [key: string]: NicoUser }>({});
+  const [users, setUsers] = useRecoilState(usersState);
+  const setKotehan = useSetKotehan();
+  const setKotehanFromNicoUserPage = useSetKotehanFromNicoUserPage();
+  const setIconUrl = useSetIconUrl();
 
   const { commentMessage, systemWs, commentWs } = useNicoLive(connectingUrl);
-
-  /**
-   * ユーザーにコテハンをセットする
-   * @param userId コテハンを付けるユーザーID
-   * @param kotehan コテハン undefinedなら削除
-   * @param kotehanNo コテハンを設定する強さ
-   * @param isSave chrome.storage.localに保存するか
-   */
-  function setKotehan(userId: string, kotehan: string | undefined, kotehanNo: number, isSave: boolean) {
-    setUsers(oldUsers => {
-      // oldUsers に userId のデータがない場合がある 初コメコテハン等
-      if (oldUsers[userId] == null) {
-        setTimeout(() => setKotehan(userId, kotehan, kotehanNo, isSave), 1000);
-        return oldUsers;
-      }
-
-      if (oldUsers[userId].kotehanNo > kotehanNo) {
-        return oldUsers;
-      }
-
-      const _oldUsers = { ...oldUsers };
-      _oldUsers[userId].kotehan = kotehan;
-      _oldUsers[userId].kotehanNo = kotehanNo;
-      if (isSave)
-        saveUserKotehan(userId, kotehan, _oldUsers[userId].anonymous);
-      return _oldUsers;
-    });
-  }
-
-  /**
-   * ニコニコユーザー情報からユーザー名を取得し、  
-   * そのユーザー名をコテハンとして設定する
-   * @param userId 取得設定するユーザーID
-   */
-  function setKotehanFromNicoUserPage(userId: string) {
-    getNicoUserName(userId)
-      .then(kotehan => setKotehan(userId, kotehan, -1, true))
-      .catch(e => {
-        logger.error(
-          `ニコニコユーザーページからのユーザー名の取得に失敗しました。
-            userId:${userId}
-            ${e}`
-        );
-      });
-  }
-
-  function setIconUrl(userId: number) {
-    getNicoUserIconUrl(userId)
-      .then(iconUrl => {
-        setUsers(oldUsers => {
-          const _oldUsers = { ...oldUsers };
-          _oldUsers[userId].iconUrl = iconUrl;
-          return _oldUsers;
-        });
-      });
-  }
 
   function connect() {
     if (connectingUrl == null)
@@ -125,18 +74,27 @@ function CommentViewer(props: {}) {
       let user = users[chat.user_id];
       let newUser = false;
 
+      let kotehan = "";
+      if (!(chat.premium === 3 && chat.anonymity == 1)) {
+        kotehan = parseKotehan(chat.content);
+      }
+
       // 新規ユーザー
       if (user == null) {
         const anonymous = chat.anonymity === 1;
         user = {
           userId: chat.user_id,
           anonymous: anonymous,
-          // iconUrl: anonymous ? "NOT FOUND" : createIconUrl(parseInt(chat.user_id)),
-          iconUrl: anonymous ? "NOT FOUND" : undefined,
-          kotehan: undefined,
+          iconUrl: undefined,
+          kotehan: kotehan === "" ? undefined : kotehan,
           kotehanNo: -1,
         };
         newUser = true;
+
+        setUsers(oldUsers => {
+          return { ...oldUsers, [user.userId]: user };
+        });
+
         if (!user.anonymous) setIconUrl(parseInt(user.userId));
 
         // ユーザー名取得
@@ -147,27 +105,9 @@ function CommentViewer(props: {}) {
             else if (!user.anonymous)   // ニコニコユーザーページから取得
               setKotehanFromNicoUserPage(user.userId);
           });
-      }
-
-      // コテハン
-      if (chat.premium != 3 || !user.anonymous) {
-        let _content = chat.content.replace("＠", "@").replace("　", " ");
-        const index = _content.indexOf("@");
-        if (0 <= index && index < _content.length) {
-          let kotehan = undefined;
-          if (_content[index + 1] == " ") { // @の次が空白だったら、コテハン削除
-            // kotehan = undefined;
-          } else {
-            kotehan = _content.substring(index + 1, _content.length).split(" ")[0];
-          }
+      } else {  // すでに存在するユーザー
+        if (kotehan !== "")
           setKotehan(chat.user_id, kotehan, chat.no, true);
-        }
-      }
-
-      if (newUser) {
-        setUsers(oldUsers => {
-          return { ...oldUsers, [user.userId]: user };
-        });
       }
     } else if ("ping" in commentMessage) {
       const ping = commentMessage.ping;
@@ -181,18 +121,18 @@ function CommentViewer(props: {}) {
     }
   }, [commentMessage]);
 
-  const comments = commentDatas.map((chat) => {
+  const comments = commentDatas.map((chat): CommentViewItem => {
     const user = users[chat.user_id];
-
     return {
       id: `${chat.no}`,
+      anonymous: user.anonymous,  // タイミング次第ではuserが存在しないことがある?
       no: chat.no,
-      iconUrl: user?.iconUrl,   // タイミング次第ではuserが存在しないことがある
+      iconUrl: user.iconUrl,
       userId: chat.user_id,
-      userName: user?.kotehan,
+      kotehan: user.kotehan,
       time: calcDateToFomat(new Date(chat.date * 1000), systemWs.liveStartTime),
       comment: chat.content
-    } as CommentViewItem;
+    };
   });
 
   const menuWidht = 30;
@@ -211,4 +151,8 @@ function CommentViewer(props: {}) {
   </div >
 }
 
-ReactDOM.render(<CommentViewer />, document.getElementById('root'));
+ReactDOM.render(
+  <RecoilRoot>
+    <CommentViewer />
+  </RecoilRoot>,
+  document.getElementById('root'));

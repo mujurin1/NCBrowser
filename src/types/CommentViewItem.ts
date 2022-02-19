@@ -4,14 +4,16 @@
  */
 export type CommentViewItem = {
   id: string;
+  /** 匿名か */
+  anonymous: boolean;
   /** コメント番号 */
   no: number;
   /** ユーザーアイコン URL */
-  iconUrl: string | "NOT FOUND" | undefined;
+  iconUrl: string | undefined;
   /** ユーザーID */
   userId: string;
-  /** ユーザー名 */
-  userName: string;
+  /** コテハン */
+  kotehan: string;
   /** コメント時間 */
   time: string;
   /** コメント内容 */
