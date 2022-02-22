@@ -44,11 +44,11 @@ export function getHTML(url: string, recursive: boolean = false): Promise<Docume
 export function getNicoUserName(userId: string, recursive: boolean = false): Promise<string> {
   return recursive
     ? getHttpText(`https://www.nicovideo.jp/user/${userId}/video?rss=2.0`)
-    .then(text => {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, "application/xml");
-      return xml.getElementsByTagName("dc:creator")[0].innerHTML;
-    })
+      .then(text => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, "application/xml");
+        return xml.getElementsByTagName("dc:creator")[0].innerHTML;
+      })
     : new Promise(resolve =>
       chainTask(() => resolve(getNicoUserName(userId, true))));
 }

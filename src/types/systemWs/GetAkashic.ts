@@ -1,5 +1,5 @@
 
-export type GetAkashicData = {
+export type GetAkashic = {
   type: "getAkashic";
   data: {
     chasePlay: boolean;

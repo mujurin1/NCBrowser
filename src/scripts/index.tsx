@@ -1,28 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import BaseTable, { AutoResizer, Column } from 'react-base-table'
-import { useRecoilState, RecoilRoot, atom, selectorFamily, useRecoilValue } from 'recoil';
+import { RecoilRoot, useRecoilValue } from 'recoil';
 
 import { CommentViewItem } from '../types/CommentViewItem';
 import { useNicoLive } from './hooks/useNicoLive';
-import { calcDateToFomat, loadUserCotehan, parseKotehan } from './util/funcs';
-import { ChatData } from '../types/commentWs/ChatData';
+import { makeChatDataToCommentViewItem } from './util/funcs';
 import { CommentWebSocket } from './common/CommentWebSocket';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
-import { usersState, useSetIconUrl, useSetKotehan, useSetKotehanFromNicoUserPage } from './data/users';
+import { usersState } from './atoms/users';
 import { logger } from './util/logging';
 
 import 'react-base-table/styles.css';
 import '../styles/index.css';
+import { chatDataState, useAddChatData } from './atoms/chatData';
 
-const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, tableHeight: number }) =>
-  <BaseTable<CommentViewItem>
+const CommentView = (props: {
+  comments: CommentViewItem[],
+  tableWidth: number,
+  tableHeight: number,
+  setRef: (ref: BaseTable<CommentViewItem>) => void;
+}) =>
+  <BaseTable<CommentViewItem> ref={props.setRef}
     data={props.comments}
     estimatedRowHeight={20}
     width={props.tableWidth}
     height={props.tableHeight}
     getScrollbarSize={() => 10}
-  // overlayRenderer={<div>HELLO</div>}
+    // overlayRenderer={<div>HELLO</div>}
+    onScroll={({ scrollLeft, scrollTop, horizontalScrollDirection, verticalScrollDirection, scrollUpdateWasRequested }) => {
+      console.log("=====================");
+      console.log(`スクロール位置左から:${scrollLeft}`);
+      console.log(`スクロール位置上から:${scrollTop}`);
+      console.log(`スクロールは左から右に？:${horizontalScrollDirection == "forward"}`);
+      console.log(`スクロールは上から下に？:${verticalScrollDirection == "forward"}`);
+      console.log(`スクロールはユーザーによって？:${!scrollUpdateWasRequested}`);
+    }}
   >
     <Column flexShrink={0} resizable={true} className="column_no"
       key="no" dataKey="no" title="コメ番" width={65}
@@ -51,13 +63,15 @@ const CommentView = (props: { comments: CommentViewItem[], tableWidth: number, t
 function CommentViewer(props: {}) {
   const [liveUrl, setLiveUrl] = useState("https://live.nicovideo.jp/watch/co3860320");
   const [connectingUrl, setConnectingUrl] = useState<string>();
-  const [commentDatas, setCommentDatas] = useState<ChatData[]>([]);
-  const [users, setUsers] = useRecoilState(usersState);
-  const setKotehan = useSetKotehan();
-  const setKotehanFromNicoUserPage = useSetKotehanFromNicoUserPage();
-  const setIconUrl = useSetIconUrl();
+  const users = useRecoilValue(usersState);
+  const addChatData = useAddChatData();
+  const chatData = useRecoilValue(chatDataState);
 
   const { commentMessage, systemWs, commentWs } = useNicoLive(connectingUrl);
+
+  /** コメントが表示されるテーブル */
+  let table: BaseTable<CommentViewItem>;
+  const setRef = (ref: BaseTable<CommentViewItem>) => table = ref;
 
   function connect() {
     if (connectingUrl == null)
@@ -67,48 +81,9 @@ function CommentViewer(props: {}) {
   // 新規コメント取得毎に実行
   useEffect(() => {
     if (commentMessage == null) return;
-
+    
     if ("chat" in commentMessage) {
-      const chat = commentMessage.chat;
-      setCommentDatas(oldData => [...oldData, chat]);
-      let user = users[chat.user_id];
-      let newUser = false;
-
-      let kotehan = "";
-      if (!(chat.premium === 3 && chat.anonymity == 1)) {
-        kotehan = parseKotehan(chat.content);
-      }
-
-      // 新規ユーザー
-      if (user == null) {
-        const anonymous = chat.anonymity === 1;
-        user = {
-          userId: chat.user_id,
-          anonymous: anonymous,
-          iconUrl: undefined,
-          kotehan: kotehan === "" ? undefined : kotehan,
-          kotehanNo: -1,
-        };
-        newUser = true;
-
-        setUsers(oldUsers => {
-          return { ...oldUsers, [user.userId]: user };
-        });
-
-        if (!user.anonymous) setIconUrl(parseInt(user.userId));
-
-        // ユーザー名取得
-        loadUserCotehan(user.userId, user.anonymous)
-          .then(kotehan => {
-            if (kotehan != null)        // chrome.storage.localから取得
-              setKotehan(user.userId, kotehan, -1, false);
-            else if (!user.anonymous)   // ニコニコユーザーページから取得
-              setKotehanFromNicoUserPage(user.userId);
-          });
-      } else {  // すでに存在するユーザー
-        if (kotehan !== "")
-          setKotehan(chat.user_id, kotehan, chat.no, true);
-      }
+      addChatData(commentMessage.chat);
     } else if ("ping" in commentMessage) {
       const ping = commentMessage.ping;
     } else if ("thread" in commentMessage) {
@@ -121,20 +96,14 @@ function CommentViewer(props: {}) {
     }
   }, [commentMessage]);
 
-  const comments = commentDatas.map((chat): CommentViewItem => {
-    const user = users[chat.user_id];
-    return {
-      id: `${chat.no}`,
-      anonymous: user.anonymous,  // タイミング次第ではuserが存在しないことがある?
-      no: chat.no,
-      iconUrl: user.iconUrl,
-      userId: chat.user_id,
-      kotehan: user.kotehan,
-      time: calcDateToFomat(new Date(chat.date * 1000), systemWs.liveStartTime),
-      comment: chat.content
-    };
-  });
+  useEffect(() => {
+    if (chatData == null || table == null) return;
 
+    // 自動スクロールするなら
+    if (true) table.scrollToRow(chatData.length - 1, "end");
+  }, [chatData]);
+
+  const comments = makeChatDataToCommentViewItem(chatData, users, systemWs?.liveStartTime);
   const menuWidht = 30;
   const bottomPading = 30;
 
@@ -145,7 +114,11 @@ function CommentViewer(props: {}) {
     </div>
     <AutoResizer>
       {({ width, height }) =>
-        <CommentView comments={comments} tableWidth={width} tableHeight={height - menuWidht - bottomPading} />
+        <CommentView
+          comments={comments}
+          tableWidth={width}
+          tableHeight={height - menuWidht - bottomPading}
+          setRef={setRef} />
       }
     </AutoResizer>
   </div >
@@ -156,3 +129,62 @@ ReactDOM.render(
     <CommentViewer />
   </RecoilRoot>,
   document.getElementById('root'));
+
+// type User = {
+//   id: string;
+//   name: string;
+// };
+
+// const usersState = atom({
+//   key: "users",
+//   default: {
+//     A: {
+//       id: "A",
+//       name: "UserA"
+//     },
+//     B: {
+//       id: "B",
+//       name: "UserB"
+//     },
+//   } as Record<string, User>,
+//   dangerouslyAllowMutability: true,
+// });
+
+// function MyApp() {
+//   const [users, setUsers] = useRecoilState(usersState);
+
+//   return <>
+//     <label>userA:{`${users["A"].id}  ${users["A"].name}`}</label>
+//     <label>userB:{`${users["B"]?.id}  ${users["B"]?.name}`}</label>
+//     <button onClick={() => {
+//       setUsers(us => {
+//         let newUs = {...us};
+//         // newUs["B"] = {id: "B", name: "UserB"}
+//         // const upU = {...newUs["A"]};
+//         // upU.name = "AAAA";
+//         // newUs["A"] = upU;
+//         // console.log(us["A"]);
+//         // us["A"].name = "NEW";
+        
+//         if(newUs["B"] == undefined) {
+//           newUs = {
+//             ...newUs, "B": {id:"B", name: "B"}
+//           };
+//         }else{
+//           console.log(us["B"]);
+//           us["B"].name = "new B";
+//         }
+        
+//         // const changeId = "B"
+//         // newUs[changeId] = {id:"B", name: "UserB"};
+//         return us;
+//       })
+//     }}>Change</button>
+//   </>
+// }
+
+// ReactDOM.render(
+//   <RecoilRoot>
+//     <MyApp />
+//   </RecoilRoot>,
+//   document.getElementById('root'));

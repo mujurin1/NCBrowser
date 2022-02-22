@@ -1,5 +1,5 @@
 
-export type CommentPingData = {
+export type CommentPing = {
   content: string;
 }
 

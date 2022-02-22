@@ -2,7 +2,7 @@
 /**
  * これを送信されたら、pong,keepSeat を返さないとwsを切断される
  */
-export type SystemPingData = {
+export type SystemPing = {
   type: "ping";
 }
 

@@ -1,12 +1,12 @@
-import { ChatData } from "./ChatData";
-import { CommentPingData } from "./CommentPingData";
-import { ThreadData } from "./ThreadData";
+import { Chat } from "./Chat";
+import { CommentPing } from "./CommentPing";
+import { Thread } from "./Thread";
 
 /**
  * コメント用ウェブソケットが返すメッセージJsonデータタイプ
  */
 export type CommentWsMessage =
-  { chat: ChatData } |
-  { ping: CommentPingData } |
-  { thread: ThreadData };
+  { chat: Chat } |
+  { ping: CommentPing } |
+  { thread: Thread };
 

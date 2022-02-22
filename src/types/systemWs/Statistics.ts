@@ -2,7 +2,7 @@
 /**
  * 視聴者・コメント数等情報
  */
-export type StatisticsData = {
+export type Statistics = {
   type: "statistics";
   data: {
     /** 累計視聴者数 */

@@ -1,5 +1,5 @@
-import { RoomData } from "../../types/systemWs/RoomData";
-import { SystemPingData } from "../../types/systemWs/SystemPingData";
+import { Room } from "../../types/systemWs/Room";
+import { SystemPing } from "../../types/systemWs/SystemPing";
 import { SystemWsMessage } from "../../types/systemWs/SystemWsMessage";
 import { logger } from "../util/logging";
 
@@ -113,12 +113,12 @@ export class SystemWebSocket {
   }
 
   /** Pingが来た時に応答する */
-  private receivePing(message: SystemPingData) {
+  private receivePing(message: SystemPing) {
     this.doSendSystem('{"type":"pong"}');
     this.doSendSystem('{"type":"keepSeat"}');
   }
 
-  private receiveRoom(message: RoomData) {
+  private receiveRoom(message: Room) {
     this._wakuStartTime = new Date(message.data.vposBaseTime);
 
     // 必要な情報を送られてきたメッセージから抽出

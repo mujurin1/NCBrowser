@@ -1,5 +1,5 @@
 
-export type StreamData = {
+export type Stream = {
   type: "stream";
   data: {
     uri: string;

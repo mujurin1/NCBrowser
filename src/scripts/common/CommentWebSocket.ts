@@ -23,6 +23,8 @@ export class CommentWebSocket {
    * @param getCommentStartMessage コメント取得開始メッセージ
    */
   public constructor(commentWsUrl: string, getCommentStartMessage: string) {
+    console.log(getCommentStartMessage);
+    
     this.getCommentStartMessage = getCommentStartMessage;
     // コメント取得開始メッセージを送信することで、コメントが貰える
     this.ws = new WebSocket(commentWsUrl, "niconama");

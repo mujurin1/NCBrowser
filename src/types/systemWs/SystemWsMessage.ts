@@ -1,16 +1,16 @@
-import { AkashicData } from "./AkashicData";
-import { GetAkashicData } from "./GetAkashicData";
-import { RoomData } from "./RoomData";
-import { ScheduleData } from "./ScheduleData";
-import { SeatData } from "./SeatData";
-import { ServerTimeData } from "./ServerTimeData";
-import { StatisticsData } from "./StatisticsData";
-import { StreamData } from "./StreamData";
-import { SystemPingData } from "./SystemPingData";
+import { Akashic } from "./Akashic";
+import { GetAkashic } from "./GetAkashic";
+import { Room } from "./Room";
+import { Schedule } from "./Schedule";
+import { Seat } from "./Seat";
+import { ServerTime } from "./ServerTime";
+import { Statistics } from "./Statistics";
+import { Stream } from "./Stream";
+import { SystemPing } from "./SystemPing";
 
 /**
  * システム用ウェブソケットが返すメッセージJsonデータタイプ
  */
 export type SystemWsMessage =
-  GetAkashicData | AkashicData | RoomData | ScheduleData | SeatData |
-  ServerTimeData | StatisticsData | StreamData | SystemPingData;
+  GetAkashic | Akashic | Room | Schedule | Seat |
+  ServerTime | Statistics | Stream | SystemPing;

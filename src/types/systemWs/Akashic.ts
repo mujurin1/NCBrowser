@@ -1,5 +1,5 @@
 
-export type AkashicData = {
+export type Akashic = {
   type: "akashic";
   data: {
     playId: string;

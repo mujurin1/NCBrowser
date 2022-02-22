@@ -3,7 +3,7 @@
  * 放送開始,延長時に受信する  
  * システムウェブソケットが受信する
  */
-export type ScheduleData = {
+export type Schedule = {
   type: "schedule";
   data: {
     /** 放送開始時刻 */

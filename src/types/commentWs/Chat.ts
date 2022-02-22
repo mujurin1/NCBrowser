@@ -3,7 +3,7 @@
  * コメントデータ型  
  * コメントウェブソケットが受信する
  */
-export type ChatData = {
+export type Chat = {
   /** 多分昔のアリーナなどの部屋IDのなごり？ */
   thread: string;
   /** コメント番号 */

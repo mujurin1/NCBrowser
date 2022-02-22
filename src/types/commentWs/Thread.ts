@@ -1,5 +1,5 @@
 
-export type ThreadData = {
+export type Thread = {
   resultcode: number;
   thread: string;
   revision: number;

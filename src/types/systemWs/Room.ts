@@ -1,5 +1,5 @@
 
-export type RoomData = {
+export type Room = {
   type: "room";
   data: {
     /** 部屋名 おそらくアリーナしかない */

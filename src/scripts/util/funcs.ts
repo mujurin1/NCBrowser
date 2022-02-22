@@ -1,3 +1,6 @@
+import { CommentViewItem } from "../../types/CommentViewItem";
+import { Chat } from "../../types/commentWs/Chat";
+import { NicoUser } from "../../types/NicoUser";
 import { HttpStatusError } from "../common/errors";
 
 /**
@@ -46,82 +49,44 @@ export function getHttpText(url: string): Promise<string> {
 }
 
 /**
- * 文字列からコテハンを取得する
- * @param str 文字列
+ * チャット情報からコテハンを取得する
+ * @param chat チャット情報
  * @returns
  *   コテハンが存在すれば1文字以上の文字列  
  *   存在しなければ空の文字列  
  *   コテハンを削除するなら`undefined`
  */
-export function parseKotehan(str: string): string | undefined {
-  let _content = str.replace("＠", "@").replace("　", " ");
+export function parseKotehan(chat: Chat): string | undefined {
+  // 運営コメなら設定しない
+  if (chat.premium === 3 && chat.anonymity == 1) return "";
+
+  let content = chat.content.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる
-  const index = _content.indexOf("@");
-  if (index < 0 || index >= _content.length)
+  const index = content.indexOf("@");
+  if (index < 0 || index >= content.length)
     return "";
   // "@"の次が空白なら、コテハン削除
-  if (_content[index + 1] == " ") {
+  if (content[index + 1] == " ") {
     return undefined;
   }
-  return _content.substring(index + 1, _content.length).split(" ")[0];
+  return content.substring(index + 1, content.length).split(" ")[0];
 }
 
-
-/* ユーザーコテハン保存・取得
-{
-  "realUserData": {
-    "1": "user1_NAME",
-    "2": "user2_NAME",
-  },
-  "anonymousUserData": {
-    "a": "user_Name",
-    "b": "user_Name",
-  }
-}
- */
-
 /**
- * ユーザーコテハンを取得する
- * @param userId ニコ生ユーザーID
- * @param isAnonymouse 取得するユーザーは184か
+ * チャットデータをコメントビューアアイテムに変換して取得する
  */
-export function loadUserCotehan(userId: string, isAnonymouse: boolean): Promise<string> {
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
-  return chrome.storage.local.get({ [key]: { userId } })
-    .then(x => x[key][userId])
-    .catch(_ => undefined);
-}
-/**
- * ユーザーコテハンを保存する
- * @param userId ニコ生ユーザーID
- * @param kotehan コテハン `undefined`なら削除
- * @param isAnonymouse 取得するユーザーは184か
- */
-export function saveUserKotehan(userId: string, kotehan: string | undefined, isAnonymouse: boolean): Promise<void> {
-  if (kotehan == null) {
-    removeUserKotehan(userId, isAnonymouse);
-    return;
-  }
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
-  // １度全件取得して追記、保存
-  return chrome.storage.local.get(key)
-    .then(x => {
-      x[key] = { ...x[key], [userId]: kotehan };
-      const a = chrome.storage.local.set(x);
-      return a;
-    });
-}
-/**
- * ユーザーコテハンを削除する
- * @param userId 削除するユーザーID
- * @param isAnonymouse 取得するユーザーは184か
- */
-export function removeUserKotehan(userId: string, isAnonymouse: boolean): Promise<void> {
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
-  return chrome.storage.local.get(key)
-    .then(x => {
-      delete x[key][userId];
-      const a = chrome.storage.local.set(x);
-      return a;
-    });
+export function makeChatDataToCommentViewItem(chatData: Chat[], users: Record<string, NicoUser>, liveStartTime: Date) {
+  return chatData.map((chat): CommentViewItem => {
+    const user = users[chat.user_id];
+    return {
+      id: `${chat.no}`,
+      anonymous: user?.anonymous,  // タイミング次第ではuserが存在しないことがある?
+      no: chat.no,
+      iconUrl: user?.iconUrl,
+      userId: chat.user_id,
+      kotehan: user?.kotehan,
+      time: calcDateToFomat(new Date(chat.date * 1000), liveStartTime),
+      comment: chat.content
+    };
+  });
 }

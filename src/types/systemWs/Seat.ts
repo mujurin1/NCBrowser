@@ -1,5 +1,5 @@
 
-export type SeatData = {
+export type Seat = {
   type: "seat";
   data: {
     keepIntervalSec: number;
