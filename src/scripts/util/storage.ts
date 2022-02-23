@@ -21,43 +21,43 @@
  * @param userId ニコ生ユーザーID
  * @param isAnonymouse 取得するユーザーは184か
  */
- export function loadUserCotehan(userId: string, isAnonymouse: boolean): Promise<string> {
+ export async function loadUserKotehan(userId: string, isAnonymouse: boolean): Promise<string> {
   const key = isAnonymouse ? "anonymousUserData" : "realUserData";
-  return chrome.storage.local.get({ [key]: { userId } })
-    .then(x => x[key][userId])
-    .catch(_ => undefined);
+  try {
+    const x = await chrome.storage.local.get({ [key]: { userId } });
+    return x[key][userId];
+  } catch (_) {
+    return undefined;
+  }
 }
 /**
  * ユーザーコテハンを保存する
  * @param userId ニコ生ユーザーID
- * @param kotehan コテハン `undefined`なら削除
+ * @param kotehan コテハン `undefined`または空文字なら削除
  * @param isAnonymouse 取得するユーザーは184か
  */
-export function saveUserKotehan(userId: string, kotehan: string | undefined, isAnonymouse: boolean): Promise<void> {
-  if (kotehan == null) {
+export async function saveUserKotehan(userId: string, kotehan: string | undefined, isAnonymouse: boolean): Promise<void> {
+  if (kotehan == null || kotehan == "") {
     removeUserKotehan(userId, isAnonymouse);
     return;
   }
   const key = isAnonymouse ? "anonymousUserData" : "realUserData";
   // １度全件取得して追記、保存
-  return chrome.storage.local.get(key)
-    .then(x => {
-      x[key] = { ...x[key], [userId]: kotehan };
-      const a = chrome.storage.local.set(x);
-      return a;
-    });
+  const x = await chrome.storage.local.get(key);
+
+  x[key] = { ...x[key], [userId]: kotehan };
+  const a = chrome.storage.local.set(x);
+  return await a;
 }
 /**
  * ユーザーコテハンを削除する
  * @param userId 削除するユーザーID
  * @param isAnonymouse 取得するユーザーは184か
  */
-export function removeUserKotehan(userId: string, isAnonymouse: boolean): Promise<void> {
+export async function removeUserKotehan(userId: string, isAnonymouse: boolean): Promise<void> {
   const key = isAnonymouse ? "anonymousUserData" : "realUserData";
-  return chrome.storage.local.get(key)
-    .then(x => {
-      delete x[key][userId];
-      const a = chrome.storage.local.set(x);
-      return a;
-    });
+  const x = await chrome.storage.local.get(key);
+  delete x[key][userId];
+  const a = chrome.storage.local.set(x);
+  return await a;
 }

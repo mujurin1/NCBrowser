@@ -1,7 +1,6 @@
-import { CommentViewItem } from "../../types/CommentViewItem";
-import { Chat } from "../../types/commentWs/Chat";
-import { NicoUser } from "../../types/NicoUser";
-import { HttpStatusError } from "../common/errors";
+import { CommentViewItem } from "../components/CommentView";
+import { NicoUser } from "../features/nicoUsers/nicoUsersSlice";
+import { Chat } from "../types/commentWs/Chat";
 
 /**
  * 入力内容の取得・チェック
@@ -38,12 +37,12 @@ export function calcDateToFomat(a: Date, b: Date): string {
  * URLからページのテキストを取得する
  * @param url テキスト取得先
  * @returns Promise<テキスト>
- * @throws HttpStatusError 取得先の応答が異常だった
+ * @throws 取得先の応答が異常だった
  */
 export function getHttpText(url: string): Promise<string> {
   return fetch(url)
     .then(res => {
-      if (!res.ok) throw new HttpStatusError(res.url, res.status);
+      if (!res.ok) throw new Error(`HTTP応答が異常でした。\nurl:${res.url}\nstatusCode${res.status}`);
       return res.text();
     });
 }
@@ -52,24 +51,23 @@ export function getHttpText(url: string): Promise<string> {
  * チャット情報からコテハンを取得する
  * @param chat チャット情報
  * @returns
- *   コテハンが存在すれば1文字以上の文字列  
- *   存在しなければ空の文字列  
- *   コテハンを削除するなら`undefined`
+ *   コテハンを更新 [コテハン, コテハンNo]  
+ *   更新しない     ["", -1]
  */
-export function parseKotehan(chat: Chat): string | undefined {
+export function parseKotehan(chat: Chat): [string, number] {
   // 運営コメなら設定しない
-  if (chat.premium === 3 && chat.anonymity == 1) return "";
+  if (chat.premium === 3 && chat.anonymity == 1) return ["", -1];
 
   let content = chat.content.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる
   const index = content.indexOf("@");
   if (index < 0 || index >= content.length)
-    return "";
+    return ["", -1];
   // "@"の次が空白なら、コテハン削除
   if (content[index + 1] == " ") {
-    return undefined;
+    return [undefined, -1];
   }
-  return content.substring(index + 1, content.length).split(" ")[0];
+  return [content.substring(index + 1, content.length).split(" ")[0], chat.no];
 }
 
 /**
@@ -79,7 +77,6 @@ export function makeChatDataToCommentViewItem(chatData: Chat[], users: Record<st
   return chatData.map((chat): CommentViewItem => {
     const user = users[chat.user_id];
     return {
-      id: `${chat.no}`,
       anonymous: user?.anonymous,  // タイミング次第ではuserが存在しないことがある?
       no: chat.no,
       iconUrl: user?.iconUrl,

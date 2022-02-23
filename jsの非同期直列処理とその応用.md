@@ -12,7 +12,7 @@
 async function method() {
   new Promise(() => {
     for(let i=0; i<10000; i++)
-      console.log(i);
+      log(i);
   });
 }
 method(); // １回め
@@ -36,8 +36,8 @@ function chainTask(task: () => void) {
     .finnaly(() => sleep(1000));
 }
 
-chainTask(() => console.log("TaskA"));
-chainTask(() => console.log("TaskB"));
+chainTask(() => log("TaskA"));
+chainTask(() => log("TaskB"));
 }
 ```
 これは、１秒以上間隔を開けてタスクを実行するコード
