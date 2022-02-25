@@ -15,7 +15,7 @@ export type LiveInfo = {
   level: number;
   /** コミュ・チャンネルをフォローしているか */
   isFollowed: boolean;
-  /** コミュ・チャンネルをフォローしているか
+  /** コミュ・チャンネルをフォローしているか\
    * （公式はこのプロパティが存在しない?）
    */
   isJoined: boolean;

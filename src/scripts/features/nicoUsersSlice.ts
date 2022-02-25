@@ -18,18 +18,18 @@ export type NicoUser = {
   /** 184か */
   anonymous: boolean;
   /**
-   * アイコンのURL
+   * アイコンのURL\
    * （184はダミーURL）
    */
   iconUrl: string;
   /**
-   * コテハン
-   * この値が`chrome.storage.local`に保存されている
+   * コテハン\
+   * この値が`chrome.storage.local`に保存されている\
    * 無ければこのユーザーIDの値は保存されてない
    */
   kotehan: string | undefined;
   /**
-   * コテハンを上書きした時のコメント番号
+   * コテハンを上書きした時のコメント番号\
    * 初期値-1 コメント以外から取得した場合も -1
    */
   kotehanNo: number | undefined;
@@ -57,29 +57,35 @@ function setKotehanLogic(
   }
 }
 
+function userChat(state: EntityState<NicoUser>, chat: Chat) {
+  const user = state.entities[chat.user_id];
+  let [kotehan, kotehanNo] = parseKotehan(chat);
+  // 新規ユーザーのコメント
+  if (user == null) {
+    const anonymous = chat.anonymity === 1;
+    usersAdapter.addOne(state, {
+      userId: chat.user_id,
+      anonymous: anonymous,
+      iconUrl: undefined,
+      kotehan: kotehan === "" ? undefined : kotehan,
+      kotehanNo: kotehanNo,
+    });
+    if (kotehan.length >= 1) saveUserKotehan(chat.user_id, kotehan, anonymous);
+  } else {
+    if (kotehan !== "")
+      setKotehanLogic(state, [user.userId, kotehan, kotehanNo, false]);
+  }
+}
+
 const nicoUsersSlice = createSlice({
   name: "nicoUsers",
   initialState: usersAdapter.getInitialState(),
   reducers: {
     receiveChat: (state, action: PayloadAction<Chat>) => {
-      const user = state.entities[action.payload.user_id];
-      let [kotehan, kotehanNo] = parseKotehan(action.payload);
-      // 新規ユーザーのコメント
-      if (user == null) {
-        const anonymous = action.payload.anonymity === 1;
-        usersAdapter.addOne(state, {
-          userId: action.payload.user_id,
-          anonymous: anonymous,
-          iconUrl: undefined,
-          kotehan: kotehan === "" ? undefined : kotehan,
-          kotehanNo: kotehanNo,
-        });
-        if (kotehan.length >= 1)
-          saveUserKotehan(action.payload.user_id, kotehan, anonymous);
-      } else {
-        if (kotehan !== "")
-          setKotehanLogic(state, [user.userId, kotehan, kotehanNo, false]);
-      }
+      userChat(state, action.payload);
+    },
+    receiveChats: (state, action: PayloadAction<Chat[]>) => {
+      action.payload.forEach((chat) => userChat(state, chat));
     },
     setKotehan: (
       state,
@@ -104,7 +110,8 @@ const nicoUsersSlice = createSlice({
 
 export const nicoUsersReducer = nicoUsersSlice.reducer;
 
-export const { receiveChat, setKotehan, setIconUrl } = nicoUsersSlice.actions;
+export const { receiveChat, receiveChats, setKotehan, setIconUrl } =
+  nicoUsersSlice.actions;
 
 export const { selectAll: selectAllNicoUsers, selectById: selectNicoUserById } =
   usersAdapter.getSelectors<RootState>((state) => state.nicoUsers);

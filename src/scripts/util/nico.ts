@@ -72,7 +72,7 @@ const defaultIconUrl =
   "https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank.jpg";
 
 /**
- * アカウントIDからそのユーザーのアイコンURLを取得する
+ * アカウントIDからそのユーザーのアイコンURLを取得する\
  * アイコンURLが存在しなくてもデフォルトURLを返す
  * @param userId ユーザーID（数値）
  * @returns そのユーザーのアイコンURL

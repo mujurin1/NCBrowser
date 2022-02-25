@@ -6,18 +6,29 @@ import BaseTable, { AutoResizer } from "react-base-table";
 import { CommentView, CommentViewItem } from "./components/CommentView";
 import {
   commentWsOnOpen,
+  batchedComments,
   receiveChat,
   receiveSchedule,
   receiveStatistics,
+  systemWsOnMessage,
+  commentWsOnMessage,
 } from "./api/nicoLiveApi";
-import { addChat, chatAllClear } from "./features/chatDataSlice";
+import { addChat, addChats, chatAllClear } from "./features/chatDataSlice";
 import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
+import { bouyomiTalk } from "./api/bouyomiChanApi";
 import "react-base-table/styles.css";
 import "../styles/index.css";
-import { bouyomiTalk } from "./api/bouyomiChanApi";
 
 commentWsOnOpen.add(() => store.dispatch(chatAllClear()));
+
+// コメントを纏めて取得しおえたら呼ばれる
+batchedComments.add((chats) => {
+  store.dispatch(addChats(chats));
+  // chats.forEach((chat) => {
+  //   store.dispatch(addChat(chat));
+  // });
+});
 
 receiveChat.add((chat) => {
   store.dispatch(addChat(chat));

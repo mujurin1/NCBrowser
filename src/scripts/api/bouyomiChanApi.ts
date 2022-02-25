@@ -6,14 +6,12 @@
  *
  * [メモ]
  * 棒読みちゃん連携デモページ
- *   https://chi.usamimi.info/Program/Application/BouyomiChan/Sample_HtmlConnection.html
+ * https://chi.usamimi.info/Program/Application/BouyomiChan/Sample_HtmlConnection.html
  * 棒読みちゃんをダウンロードしたファイルに使用例等がある
- *   /SampleSrc/SampleSrc.txt にfetchの例も書いてる
+ * /SampleSrc/SampleSrc.txt にfetchの例も書いてる
  */
 
-/**
- * 棒読みちゃんの読み上げボイス
- */
+/** 棒読みちゃんの読み上げボイス */
 export type BouyomiVoice = {
   id: number;
   kind: string;
@@ -33,16 +31,14 @@ export let bouyomiPort: number = 50080;
 /** 棒読みちゃんのボイス一覧を取得します */
 export const getBouyomiVoices = () => _bouyomiVoices;
 
-/**
- * 使用可能なボイスリストを更新する
- */
+/** 使用可能なボイスリストを更新する */
 export async function bouyomiVoiceUpdate() {
   const res = await fetch(`http://localhost:${bouyomiPort}/GetVoiceList`);
   _bouyomiVoices = (await res.json()) as BouyomiVoice[];
 }
 
 /**
- * 棒読みちゃんに読み上げさせる
+ * 棒読みちゃんに読み上げさせる\
  * @param 棒読みちゃんが読み上げたタスクのID
  */
 export async function bouyomiTalk(text: string): Promise<number> {

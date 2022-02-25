@@ -40,6 +40,21 @@ export const receiveStatistics = _receiveStatistics.asSetOnlyTrigger();
 const _receiveChat = new Trigger<[Chat]>();
 export const receiveChat = _receiveChat.asSetOnlyTrigger();
 
+/**
+ * コメント取得状態\
+ * 未接続 | 接続時のコメント取得中 | 過去コメ取得中 | コメント取得完了
+ */
+let _gettingCommentState: "notConnect" | "first" | "past" | "complete" =
+  "notConnect";
+/** コメントを一時的にキャッシュしておく */
+let _commentsCache: Chat[] = [];
+
+/**
+ * コメントを纏めて取得しおえたら呼ばれる
+ * @returns 纏めて取得したコメント
+ */
+export let batchedComments = new Trigger<[Chat[]]>();
+
 // システムウェブソケットに送るメッセージ
 const message_system_1 =
   '{"type":"startWatching","data":{"stream":{"quality":"abr","protocol":"hls","latency":"low","chasePlay":false},"room":{"protocol":"webSocket","commentable":true},"reconnect":false}}';
@@ -52,7 +67,7 @@ let _wakuStartTime: Date;
 let _receiveCommentStartMessage: string;
 
 /**
- * 放送に接続する
+ * 放送に接続する\
  * 視聴権限がない場合は接続しない
  * @param liveUrl
  * @returns [ 放送情報のJSON, "公式" | "CH" | "ユーザー" ]
@@ -142,11 +157,12 @@ export function doSendSystem(message: string) {
 
 // コメントセッションへメッセージを送る
 export function doSendComment(message: string) {
+  _gettingCommentState = "notConnect";
+  _commentWs.send(message);
   logger.info(
     "nicoLiveApi.doSendComment",
     `SENT TO THE COMMENT SERVER\n${message}`
   );
-  _commentWs.send(message);
 }
 
 /**
@@ -187,9 +203,20 @@ function receiveCommentWsMessage(e: MessageEvent) {
   _commentWsOnMessage.fire(e);
   const message = JSON.parse(e.data) as CommentWsMessage;
   if ("chat" in message) {
-    _receiveChat.fire(message.chat);
+    if (_gettingCommentState !== "complete") {
+      _commentsCache.push(message.chat);
+    } else {
+      _receiveChat.fire(message.chat);
+    }
   } else if ("ping" in message) {
+    if (_gettingCommentState === "first") {
+      _gettingCommentState = "complete";
+      batchedComments.fire(_commentsCache.splice(0));
+    }
   } else if ("thread" in message) {
+    if (_gettingCommentState === "notConnect") {
+      _gettingCommentState = "first";
+    }
   } else {
     logger.warn(
       "nicoLiveApi.receiveCommentWsMessage",

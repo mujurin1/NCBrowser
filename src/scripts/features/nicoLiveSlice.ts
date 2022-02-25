@@ -15,7 +15,7 @@ import { Schedule } from "../types/systemWs/Schedule";
 import { Statistics } from "../types/systemWs/Statistics";
 
 /**
- * 接続する放送を変更する
+ * 接続する放送を変更する\
  * `liveId`が`undefined`または空文字なら、切断
  */
 export const changeLive = createAsyncThunk(
@@ -60,7 +60,8 @@ export type NicoLiveType = {
   schedule: Schedule;
   /** 視聴者数・コメント数等情報 */
   statistics: Statistics;
-  /** 接続状態
+  /**
+   * 接続状態\
    * 未接続,接続待機,接続,視聴権限無し
    */
   state: "notConnect" | "waiting" | "connect";
