@@ -1,4 +1,3 @@
-
 export type Stream = {
   type: "stream";
   data: {
@@ -7,8 +6,8 @@ export type Stream = {
     quality: string;
     availableQualities: string[];
     protocol: string;
-  }
-}
+  };
+};
 
 /*
 {

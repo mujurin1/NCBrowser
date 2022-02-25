@@ -1,26 +1,36 @@
-import { createAsyncThunk, createEntityAdapter, createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit"
+import {
+  createAsyncThunk,
+  createEntityAdapter,
+  createSlice,
+  nanoid,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import { Chat } from "../types/commentWs/Chat";
 import { RootState } from "../app/store";
 import { receiveChat, setIconUrl, setKotehan } from "./nicoUsersSlice";
 import { loadUserKotehan } from "../util/storage";
 import { getNicoUserIconUrl, getNicoUserName } from "../util/nico";
 
-export const addChat = createAsyncThunk("chatData/addChat", async (chat: Chat, { dispatch, getState }) => {
-  const anonymity = chat.anonymity === 1;
-  const state = getState() as RootState;
+export const addChat = createAsyncThunk(
+  "chatData/addChat",
+  async (chat: Chat, { dispatch, getState }) => {
+    const anonymity = chat.anonymity === 1;
+    const state = getState() as RootState;
 
-  dispatch(receiveChat(chat));
-  dispatch(chatDataSlice.actions.addChatData(ChatToMeta(chat)));
+    dispatch(receiveChat(chat));
+    dispatch(chatDataSlice.actions.addChatData(ChatToMeta(chat)));
 
-  let kotehan = await loadUserKotehan(chat.user_id, anonymity);
-  // 新規ユーザーかつ生ID
-  if (state.nicoUsers.entities[chat.user_id] == null && !anonymity) {
-    kotehan ??= await getNicoUserName(chat.user_id);
-    const iconUrl = await getNicoUserIconUrl(Number(chat.user_id));
-    dispatch(setIconUrl([chat.user_id, iconUrl]));
+    let kotehan = await loadUserKotehan(chat.user_id, anonymity);
+    // 新規ユーザーかつ生ID
+    if (state.nicoUsers.entities[chat.user_id] == null && !anonymity) {
+      kotehan ??= await getNicoUserName(chat.user_id);
+      const iconUrl = await getNicoUserIconUrl(Number(chat.user_id));
+      dispatch(setIconUrl([chat.user_id, iconUrl]));
+    }
+    if (kotehan != null)
+      dispatch(setKotehan([chat.user_id, kotehan, -1, false]));
   }
-  if (kotehan != null) dispatch(setKotehan([chat.user_id, kotehan, -1, false]));
-});
+);
 
 function ChatToMeta(chat: Chat): ChatMeta {
   return {
@@ -34,11 +44,11 @@ function ChatToMeta(chat: Chat): ChatMeta {
     isOfficial: chat.premium === 3,
     comment: chat.content,
     yourpost: chat.yourpost === 1,
-  }
+  };
 }
 
 const chatDataAdapter = createEntityAdapter<ChatMeta>({
-  selectId: model => model.nanoId,
+  selectId: (model) => model.nanoId,
 });
 
 export type ChatMeta = {
@@ -62,7 +72,7 @@ export type ChatMeta = {
   comment: string;
   /** 自分自身のコメントか */
   yourpost: boolean;
-}
+};
 
 const chatDataSlice = createSlice({
   name: "chatData",
@@ -73,20 +83,18 @@ const chatDataSlice = createSlice({
     },
     chatAllClear: (state) => {
       chatDataAdapter.removeAll(state);
-    }
+    },
   },
   extraReducers(builder) {
-    builder
-  }
+    builder;
+  },
 });
 
 export const chatDataReducer = chatDataSlice.reducer;
 
-export const {
-  chatAllClear
-} = chatDataSlice.actions;
+export const { chatAllClear } = chatDataSlice.actions;
 
 export const {
   selectAll: selectAllChatDataUsers,
   selectById: selectChatDataById,
-} = chatDataAdapter.getSelectors<RootState>(state => state.chatData);
+} = chatDataAdapter.getSelectors<RootState>((state) => state.chatData);

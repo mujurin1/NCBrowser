@@ -1,4 +1,3 @@
-
 export type Fn<T extends any[] = []> = (...arg: T) => void;
 
 export interface SetOnlyTrigger<T extends any[] = []> {
@@ -10,7 +9,7 @@ export interface SetOnlyTrigger<T extends any[] = []> {
 /**
  * 関数を登録して、呼び出してもらうやつ
  */
-export class Trigger<T extends any[] = []> implements SetOnlyTrigger<T>{
+export class Trigger<T extends any[] = []> implements SetOnlyTrigger<T> {
   private readonly funcSet = new Set<Fn<T>>();
 
   public asSetOnlyTrigger(): SetOnlyTrigger<T> {
@@ -34,6 +33,6 @@ export class Trigger<T extends any[] = []> implements SetOnlyTrigger<T>{
   }
 
   public fire(...args: T) {
-    this.funcSet.forEach(fn => fn(...args));
+    this.funcSet.forEach((fn) => fn(...args));
   }
 }

@@ -1,6 +1,5 @@
-
 /**
- * 放送開始,延長時に受信する  
+ * 放送開始,延長時に受信する
  * システムウェブソケットが受信する
  */
 export type Schedule = {
@@ -10,8 +9,8 @@ export type Schedule = {
     begin: string;
     /** 放送終了時刻(予定) */
     end: string;
-  }
-}
+  };
+};
 
 /*
 {

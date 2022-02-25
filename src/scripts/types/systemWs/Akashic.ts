@@ -1,4 +1,3 @@
-
 export type Akashic = {
   type: "akashic";
   data: {
@@ -8,8 +7,8 @@ export type Akashic = {
     status: string;
     token: string;
     playerId: string;
-  }
-}
+  };
+};
 
 /*
 {

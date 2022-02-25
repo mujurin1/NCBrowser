@@ -1,10 +1,9 @@
-
 export type GetAkashic = {
   type: "getAkashic";
   data: {
     chasePlay: boolean;
-  }
-}
+  };
+};
 
 /*
 {

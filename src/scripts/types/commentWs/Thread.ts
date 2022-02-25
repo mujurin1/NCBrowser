@@ -1,4 +1,3 @@
-
 export type Thread = {
   resultcode: number;
   thread: string;
@@ -6,7 +5,7 @@ export type Thread = {
   server_time: number;
   last_res: number;
   ticket: string;
-}
+};
 /*
 {
   "thread": {

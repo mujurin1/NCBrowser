@@ -6,7 +6,6 @@ import { Thread } from "./Thread";
  * コメント用ウェブソケットが返すメッセージJsonデータタイプ
  */
 export type CommentWsMessage =
-  { chat: Chat } |
-  { ping: CommentPing } |
-  { thread: Thread };
-
+  | { chat: Chat }
+  | { ping: CommentPing }
+  | { thread: Thread };

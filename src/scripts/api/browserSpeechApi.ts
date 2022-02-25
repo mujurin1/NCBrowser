@@ -15,13 +15,13 @@
 // }
 
 // /**
-//  * ブラウザ 読み上げAPI  
-//  * `SpeechSynthesisUtterance`を使用している  
-//  * `SpeechSynthesis`は(少なくともChromeでは)ブラウザで1つのものを共有しているので、  
+//  * ブラウザ 読み上げAPI
+//  * `SpeechSynthesisUtterance`を使用している
+//  * `SpeechSynthesis`は(少なくともChromeでは)ブラウザで1つのものを共有しているので、
 //  * 他のサイト又はコメビュを多重起動して読み上げていると、それらと干渉してしまう。
-//  * 
-//  * uttr: https://developer.mozilla.org/ja/docs/Web/API/SpeechSynthesis  
-//  * speech: https://developer.mozilla.org/ja/docs/Web/API/SpeechSynthesisUtterance  
+//  *
+//  * uttr: https://developer.mozilla.org/ja/docs/Web/API/SpeechSynthesis
+//  * speech: https://developer.mozilla.org/ja/docs/Web/API/SpeechSynthesisUtterance
 //  * 参考: https://qiita.com/hmmrjn/items/be29c62ba4e4a02d305c
 //  */
 // export class BrowserSpeechAPI {
@@ -34,7 +34,6 @@
 //   static #pitch: number = 1;
 //   static #rate: number = 1;
 //   static #volume: number = 0.6;
-
 
 //   public static set lang(value) { BrowserSpeechAPI.#lang = value; }
 //   public static set pitch(value) { BrowserSpeechAPI.#pitch = value; }
@@ -58,7 +57,7 @@
 //   public static get speeking() { return speechSynthesis.speaking }
 
 //   /**
-//    * 通常は呼び出す必要は無い  
+//    * 通常は呼び出す必要は無い
 //    * SpeechAPIインポート時に自動的に呼び出される
 //    */
 //   public static initialize() {

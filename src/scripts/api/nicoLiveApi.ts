@@ -41,7 +41,8 @@ const _receiveChat = new Trigger<[Chat]>();
 export const receiveChat = _receiveChat.asSetOnlyTrigger();
 
 // システムウェブソケットに送るメッセージ
-const message_system_1 = '{"type":"startWatching","data":{"stream":{"quality":"abr","protocol":"hls","latency":"low","chasePlay":false},"room":{"protocol":"webSocket","commentable":true},"reconnect":false}}';
+const message_system_1 =
+  '{"type":"startWatching","data":{"stream":{"quality":"abr","protocol":"hls","latency":"low","chasePlay":false},"room":{"protocol":"webSocket","commentable":true},"reconnect":false}}';
 const message_system_2 = '{"type":"getAkashic","data":{"chasePlay":false}}';
 
 let _systemWs: WebSocket;
@@ -51,9 +52,9 @@ let _wakuStartTime: Date;
 let _receiveCommentStartMessage: string;
 
 /**
- * 放送に接続する  
+ * 放送に接続する
  * 視聴権限がない場合は接続しない
- * @param liveUrl 
+ * @param liveUrl
  * @returns [ 放送情報のJSON, "公式" | "CH" | "ユーザー" ]
  * @throws 放送ページの応答が異常だった
  */
@@ -63,11 +64,15 @@ export async function connectNicoLive(liveUrl: string): Promise<LiveInfo> {
   // ======================= System,Commentセッションへの接続
   // 参考: https://qiita.com/pasta04/items/33da06cf3c21e34fc4d1
   /** 大体放送に関する情報がここに集まってる */
-  const embeddedData = JSON.parse(livePage.getElementById("embedded-data").getAttribute("data-props"));
+  const embeddedData = JSON.parse(
+    livePage.getElementById("embedded-data").getAttribute("data-props")
+  );
 
   // memo.md に内容の例を書いている
-  const isOfficial
-    = livePage.getElementsByClassName("___program-provider-type-label___3VgIC ___program-provider-type-label___1qG1b")[0]?.innerHTML === "公式";
+  const isOfficial =
+    livePage.getElementsByClassName(
+      "___program-provider-type-label___3VgIC ___program-provider-type-label___1qG1b"
+    )[0]?.innerHTML === "公式";
 
   const socialGroup = embeddedData.socialGroup;
   const program = embeddedData.program;
@@ -88,7 +93,7 @@ export async function connectNicoLive(liveUrl: string): Promise<LiveInfo> {
     title: program?.title,
     tags: program?.tag?.list,
     isOfficial: isOfficial,
-    liverId: embeddedData.broadcasterBroadcastRequest?.recievedUserId
+    liverId: embeddedData.broadcasterBroadcastRequest?.recievedUserId,
   };
   if (liveInfo.liverId === "") liveInfo.liverId = undefined;
 
@@ -104,12 +109,12 @@ export async function connectNicoLive(liveUrl: string): Promise<LiveInfo> {
       doSendSystem(message_system_2);
       _systemWsOnOpen.fire();
     };
-    _systemWs.onmessage = e => {
+    _systemWs.onmessage = (e) => {
       onMessageSystem(e);
       _systemWsOnMessage.fire(e);
     };
     _systemWs.onclose = () => _systemWsOnClose.fire();
-    _systemWs.onerror = e => _systemWsOnError.fire(e);
+    _systemWs.onerror = (e) => _systemWsOnError.fire(e);
   }
 
   return liveInfo;
@@ -125,22 +130,28 @@ export function disconnectNicoLive() {
 
 /**
  * システムウェブソケットへメッセージを送る
- * @param message 
+ * @param message
  */
 export function doSendSystem(message: string) {
-  logger.info("nicoLiveApi.doSendSystem", `SENT TO THE SYSTEM SERVER: ${message}`);
+  logger.info(
+    "nicoLiveApi.doSendSystem",
+    `SENT TO THE SYSTEM SERVER: ${message}`
+  );
   _systemWs.send(message);
 }
 
 // コメントセッションへメッセージを送る
 export function doSendComment(message: string) {
-  logger.info("nicoLiveApi.doSendComment", `SENT TO THE COMMENT SERVER\n${message}`);
+  logger.info(
+    "nicoLiveApi.doSendComment",
+    `SENT TO THE COMMENT SERVER\n${message}`
+  );
   _commentWs.send(message);
 }
 
 /**
  * システムウェブソケットがメッセージを受け取ったら呼ばれる
- * @param e 
+ * @param e
  */
 function onMessageSystem(e: MessageEvent) {
   _systemWsOnMessage.fire(e);
@@ -151,7 +162,7 @@ function onMessageSystem(e: MessageEvent) {
   } else if (message.type === "room") {
     receiveRoom(message);
   } else if (message.type === "schedule") {
-    _receiveSchedule.fire(message)
+    _receiveSchedule.fire(message);
   } else if (message.type === "getAkashic") {
   } else if (message.type === "akashic") {
   } else if (message.type === "seat") {
@@ -170,7 +181,7 @@ function onMessageSystem(e: MessageEvent) {
 
 /**
  * コメントウェブソケットからメッセージを受け取ってコールバックに渡す仲介
- * @param e 
+ * @param e
  */
 function receiveCommentWsMessage(e: MessageEvent) {
   _commentWsOnMessage.fire(e);
@@ -190,7 +201,7 @@ function receiveCommentWsMessage(e: MessageEvent) {
 
 /**
  * Pingが来た時に応答する
- * @param message 
+ * @param message
  */
 function receivePing(message: SystemPing) {
   doSendSystem('{"type":"pong"}');
@@ -199,7 +210,7 @@ function receivePing(message: SystemPing) {
 
 /**
  * コメントサーバー接続用メッセージが送られたら呼ばれる
- * @param message 
+ * @param message
  */
 function receiveRoom(message: Room) {
   _wakuStartTime = new Date(message.data.vposBaseTime);
@@ -208,7 +219,8 @@ function receiveRoom(message: Room) {
   const uri_comment = message.data.messageServer.uri;
   const threadID = message.data.threadId;
   const threadkey = message.data.yourPostKey;
-  const threadkeyV = _loginUserId == "guest" ? "" : `,"threadkey":"${threadkey}"`;
+  const threadkeyV =
+    _loginUserId == "guest" ? "" : `,"threadkey":"${threadkey}"`;
   _receiveCommentStartMessage = `[{"ping":{"content":"rs:0"}},{"ping":{"content":"ps:0"}},{"thread":{"thread":"${threadID}","version":"20061206","user_id":"${_loginUserId}","res_from":-150,"with_global":1,"scores":1,"nicoru":0${threadkeyV}}},{"ping":{"content":"pf:0"}},{"ping":{"content":"rf:0"}}]`;
   // コメントセッションとのWebSocket接続を開始
   readyConnectCommentWs(uri_comment);
@@ -216,7 +228,7 @@ function receiveRoom(message: Room) {
 
 /**
  * コメントウェブソケット接続準備が整ったら呼ばれる
- * @param commentWsUrl 
+ * @param commentWsUrl
  */
 function readyConnectCommentWs(commentWsUrl: string) {
   _commentWs = new WebSocket(commentWsUrl);
@@ -224,7 +236,7 @@ function readyConnectCommentWs(commentWsUrl: string) {
     doSendComment(_receiveCommentStartMessage);
     _commentWsOnOpen.fire();
   };
-  _commentWs.onmessage = e => receiveCommentWsMessage(e);
+  _commentWs.onmessage = (e) => receiveCommentWsMessage(e);
   _commentWs.onclose = () => _commentWsOnClose.fire();
-  _commentWs.onerror = e => _commentWsOnError.fire(e);
+  _commentWs.onerror = (e) => _commentWsOnError.fire(e);
 }

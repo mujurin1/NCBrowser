@@ -1,10 +1,9 @@
-
 export type ServerTime = {
   type: "serverTime";
   data: {
     currentMs: string;
-  }
-}
+  };
+};
 
 /*
 {

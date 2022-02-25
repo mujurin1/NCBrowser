@@ -3,27 +3,16 @@
   "name": "NCBrowser",
   "version": "0.0.0.1",
   "description": "",
-  "permissions": [
-    "cookies",
-    "storage",
-    "contextMenus"
-  ],
-  "host_permissions": [
-    "<all_urls>",
-    "*://*.nicovideo.jp/*"
-  ],
+  "permissions": ["cookies", "storage", "contextMenus"],
+  "host_permissions": ["<all_urls>", "*://*.nicovideo.jp/*"],
   "content_security_policy": {
     "script-src": "'self' 'unsafe-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA='",
     "object-src": "'self'"
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://*.nicovideo.jp/*"
-      ],
-      "js": [
-        "./content.js"
-      ]
+      "matches": ["https://*.nicovideo.jp/*"],
+      "js": ["./content.js"]
     }
   ],
   "background": {

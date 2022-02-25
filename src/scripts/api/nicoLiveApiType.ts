@@ -1,4 +1,3 @@
-
 /**
  * 放送情報
  */
@@ -16,7 +15,7 @@ export type LiveInfo = {
   level: number;
   /** コミュ・チャンネルをフォローしているか */
   isFollowed: boolean;
-  /** コミュ・チャンネルをフォローしているか  
+  /** コミュ・チャンネルをフォローしているか
    * （公式はこのプロパティが存在しない?）
    */
   isJoined: boolean;
@@ -36,7 +35,7 @@ export type LiveInfo = {
   tags: Tag[];
   /** 公式放送か */
   isOfficial: boolean;
-}
+};
 
 /**
  * タグ（カテゴリ含む）情報
@@ -53,4 +52,4 @@ export type Tag = {
   isLocked: boolean;
   /** 削除可能か */
   isDeletable: boolean;
-}
+};

@@ -1,4 +1,3 @@
-
 /*
  * chrome.storage 系統
  */
@@ -21,7 +20,10 @@
  * @param userId ニコ生ユーザーID
  * @param isAnonymouse 取得するユーザーは184か
  */
- export async function loadUserKotehan(userId: string, isAnonymouse: boolean): Promise<string> {
+export async function loadUserKotehan(
+  userId: string,
+  isAnonymouse: boolean
+): Promise<string> {
   const key = isAnonymouse ? "anonymousUserData" : "realUserData";
   try {
     const x = await chrome.storage.local.get({ [key]: { userId } });
@@ -36,7 +38,11 @@
  * @param kotehan コテハン `undefined`または空文字なら削除
  * @param isAnonymouse 取得するユーザーは184か
  */
-export async function saveUserKotehan(userId: string, kotehan: string | undefined, isAnonymouse: boolean): Promise<void> {
+export async function saveUserKotehan(
+  userId: string,
+  kotehan: string | undefined,
+  isAnonymouse: boolean
+): Promise<void> {
   if (kotehan == null || kotehan == "") {
     removeUserKotehan(userId, isAnonymouse);
     return;
@@ -54,7 +60,10 @@ export async function saveUserKotehan(userId: string, kotehan: string | undefine
  * @param userId 削除するユーザーID
  * @param isAnonymouse 取得するユーザーは184か
  */
-export async function removeUserKotehan(userId: string, isAnonymouse: boolean): Promise<void> {
+export async function removeUserKotehan(
+  userId: string,
+  isAnonymouse: boolean
+): Promise<void> {
   const key = isAnonymouse ? "anonymousUserData" : "realUserData";
   const x = await chrome.storage.local.get(key);
   delete x[key][userId];

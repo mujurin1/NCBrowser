@@ -1,4 +1,10 @@
-import { createAsyncThunk, createEntityAdapter, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createEntityAdapter,
+  createSlice,
+  EntityState,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import { Chat } from "../types/commentWs/Chat";
 import { RootState } from "../app/store";
 import { parseKotehan } from "../util/funcs";
@@ -12,33 +18,36 @@ export type NicoUser = {
   /** 184か */
   anonymous: boolean;
   /**
-   * アイコンのURL  
+   * アイコンのURL
    * （184はダミーURL）
    */
   iconUrl: string;
   /**
-   * コテハン  
-   * この値が`chrome.storage.local`に保存されている  
+   * コテハン
+   * この値が`chrome.storage.local`に保存されている
    * 無ければこのユーザーIDの値は保存されてない
    */
   kotehan: string | undefined;
   /**
-   * コテハンを上書きした時のコメント番号  
+   * コテハンを上書きした時のコメント番号
    * 初期値-1 コメント以外から取得した場合も -1
    */
   kotehanNo: number | undefined;
-}
+};
 
 const usersAdapter = createEntityAdapter<NicoUser>({
-  selectId: model => model.userId
+  selectId: (model) => model.userId,
 });
 
 /**
  * コテハンを上書きする
- * @param state 
+ * @param state
  * @param payload [ ユーザーID, コテハン, コテハン番号, 強制的に上書きする ]
  */
-function setKotehanLogic(state: WritableDraft<EntityState<NicoUser>>, payload: readonly [string, string, number, boolean]) {
+function setKotehanLogic(
+  state: WritableDraft<EntityState<NicoUser>>,
+  payload: readonly [string, string, number, boolean]
+) {
   const [userId, kotehan, kotehanNo, forced] = payload;
   const user = state.entities[userId];
   if (forced || user.kotehanNo === -1 || user.kotehanNo <= kotehanNo) {
@@ -63,7 +72,7 @@ const nicoUsersSlice = createSlice({
           anonymous: anonymous,
           iconUrl: undefined,
           kotehan: kotehan === "" ? undefined : kotehan,
-          kotehanNo: kotehanNo
+          kotehanNo: kotehanNo,
         });
         if (kotehan.length >= 1)
           saveUserKotehan(action.payload.user_id, kotehan, anonymous);
@@ -72,33 +81,30 @@ const nicoUsersSlice = createSlice({
           setKotehanLogic(state, [user.userId, kotehan, kotehanNo, false]);
       }
     },
-    setKotehan: (state, action: PayloadAction<readonly [string, string, number, boolean]>) => {
+    setKotehan: (
+      state,
+      action: PayloadAction<readonly [string, string, number, boolean]>
+    ) => {
       setKotehanLogic(state, action.payload);
     },
     setIconUrl: (state, action: PayloadAction<readonly [string, string]>) => {
       const [userId, iconUrl] = action.payload;
       state.entities[userId].iconUrl = iconUrl;
-    }
+    },
   },
   extraReducers(builder) {
-    builder
+    builder;
     // extraReducerの見本として残してる
     // .addCase(setIconUrl.fulfilled, (state, action) => {
     //   const [userId, iconUrl] = action.payload;
     //   state.entities[userId].iconUrl = iconUrl;
     // })
-  }
+  },
 });
 
 export const nicoUsersReducer = nicoUsersSlice.reducer;
 
-export const {
-  receiveChat,
-  setKotehan,
-  setIconUrl
-} = nicoUsersSlice.actions;
+export const { receiveChat, setKotehan, setIconUrl } = nicoUsersSlice.actions;
 
-export const {
-  selectAll: selectAllNicoUsers,
-  selectById: selectNicoUserById,
-} = usersAdapter.getSelectors<RootState>(state => state.nicoUsers);
+export const { selectAll: selectAllNicoUsers, selectById: selectNicoUserById } =
+  usersAdapter.getSelectors<RootState>((state) => state.nicoUsers);

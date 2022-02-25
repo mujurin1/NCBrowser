@@ -4,7 +4,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     title: "Open NCB",
     id: "main-page",
-    contexts: ["action"]
+    contexts: ["action"],
   });
 
   // MEMO: 入れ子になったメニュー
@@ -27,7 +27,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener(({ menuItemId, checked }) => {
   if (menuItemId === "main-page") {
     chrome.tabs.create({
-      url: "./index.html"
+      url: "./index.html",
     });
   }
 });

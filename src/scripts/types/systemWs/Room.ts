@@ -1,4 +1,3 @@
-
 export type Room = {
   type: "room";
   data: {
@@ -19,8 +18,8 @@ export type Room = {
     waybackkey: string;
     /** ChatData.vpos の基準時刻(枠開始時刻？) */
     vposBaseTime: string;
-  }
-}
+  };
+};
 
 /*
 {

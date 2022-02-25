@@ -1,4 +1,3 @@
-
 /**
  * 視聴者・コメント数等情報
  */
@@ -15,8 +14,8 @@ export type Statistics = {
     giftPoints: number;
     /** 同接数 0:居ない 1:居る */
     concurrentViewerScale: number;
-  }
-}
+  };
+};
 
 /*
 {

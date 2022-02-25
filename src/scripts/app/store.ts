@@ -10,8 +10,8 @@ export const store = configureStore({
     nicoUsers: nicoUsersReducer,
     chatData: chatDataReducer,
     nicoLive: nicoLiveReducer,
-    ncbOption: ncbOptionReducer
-  }
+    ncbOption: ncbOptionReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

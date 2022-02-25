@@ -12,5 +12,12 @@ import { SystemPing } from "./SystemPing";
  * システム用ウェブソケットが返すメッセージJsonデータタイプ
  */
 export type SystemWsMessage =
-  GetAkashic | Akashic | Room | Schedule | Seat |
-  ServerTime | Statistics | Stream | SystemPing;
+  | GetAkashic
+  | Akashic
+  | Room
+  | Schedule
+  | Seat
+  | ServerTime
+  | Statistics
+  | Stream
+  | SystemPing;

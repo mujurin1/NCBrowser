@@ -1,6 +1,5 @@
-
 /**
- * コメントデータ型  
+ * コメントデータ型
  * コメントウェブソケットが受信する
  */
 export type Chat = {
@@ -26,4 +25,4 @@ export type Chat = {
   content: string;
   /** 1:自分自身のコメント */
   yourpost: number | undefined;
-}
+};
