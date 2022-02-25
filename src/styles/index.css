@@ -3,11 +3,6 @@ body {
   margin: 0px;
 }
 
-img {
-  width:100%;
-  height:auto;
-}
-
 .menu {
   height: 30px;
 }
@@ -17,6 +12,7 @@ img {
   inset: 0;
 }
 
+/* コメントビューア カラム */
 .column_no {
   text-align: right;
   justify-content: flex-end;
@@ -24,11 +20,14 @@ img {
 .column_icon {
   padding: 0;
 }
+.column_icon > img {
+  width:100%;
+  height:auto;
+}
 .column_time {
   text-align: center;
 }
-
-.not_estimate {
+.column_kotehan > div {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

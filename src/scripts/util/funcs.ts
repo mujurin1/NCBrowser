@@ -1,5 +1,3 @@
-import { CommentViewItem } from "../components/CommentView";
-import { NicoUser } from "../features/nicoUsers/nicoUsersSlice";
 import { Chat } from "../types/commentWs/Chat";
 
 /**
@@ -68,22 +66,4 @@ export function parseKotehan(chat: Chat): [string, number] {
     return [undefined, -1];
   }
   return [content.substring(index + 1, content.length).split(" ")[0], chat.no];
-}
-
-/**
- * チャットデータをコメントビューアアイテムに変換して取得する
- */
-export function makeChatDataToCommentViewItem(chatData: Chat[], users: Record<string, NicoUser>, liveStartTime: Date) {
-  return chatData.map((chat): CommentViewItem => {
-    const user = users[chat.user_id];
-    return {
-      anonymous: user?.anonymous,  // タイミング次第ではuserが存在しないことがある?
-      no: chat.no,
-      iconUrl: user?.iconUrl,
-      userId: chat.user_id,
-      kotehan: user?.kotehan,
-      time: calcDateToFomat(new Date(chat.date * 1000), liveStartTime),
-      comment: chat.content
-    };
-  });
 }

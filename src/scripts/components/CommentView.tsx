@@ -8,6 +8,8 @@ import { calcDateToFomat } from "../util/funcs";
  * CommentViewに表示する情報
  */
 export type CommentViewItem = {
+  /** 一意なID */
+  nanoId: string;
   /** コメント番号 */
   no: number;
   /** ユーザーアイコン URL */
@@ -32,21 +34,21 @@ const _CommentView = (props: {
 
   return (
     <BaseTable<CommentViewItem>
-      rowKey="no"
+      rowKey="nanoId"
       ref={props.setRef}
       data={comments}
-      estimatedRowHeight={30}
+      estimatedRowHeight={20}
       width={props.tableSize.width}
       height={props.tableSize.height}
       getScrollbarSize={() => 10}
       // overlayRenderer={<div>HELLO</div>}
       onScroll={({ scrollLeft, scrollTop, horizontalScrollDirection, verticalScrollDirection, scrollUpdateWasRequested }) => {
-        // .log("=====================");
-        // .log(`スクロール位置左から:${scrollLeft}`);
-        // .log(`スクロール位置上から:${scrollTop}`);
-        // .log(`スクロールは左から右に？:${horizontalScrollDirection == "forward"}`);
-        // .log(`スクロールは上から下に？:${verticalScrollDirection == "forward"}`);
-        // .log(`スクロールはユーザーによって？:${!scrollUpdateWasRequested}`);
+        // console.log("=====================");
+        // console.log(`スクロール位置左から:${scrollLeft}`);
+        // console.log(`スクロール位置上から:${scrollTop}`);
+        // console.log(`スクロールは左から右に？:${horizontalScrollDirection == "forward"}`);
+        // console.log(`スクロールは上から下に？:${verticalScrollDirection == "forward"}`);
+        // console.log(`スクロールはユーザーによって？:${!scrollUpdateWasRequested}`);
       }}
     >
       <Column flexShrink={0} resizable={true} className="column_no"
@@ -57,14 +59,15 @@ const _CommentView = (props: {
         title="アイコン" width={50}
         cellRenderer={
           ({ rowData }) =>
-            rowData.anonymous ? <></> : <img src={rowData.iconUrl}></img>
+            rowData.anonymous ? <></> : <img src={rowData.iconUrl} />
         }
       />
-      <Column<CommentViewItem> flexShrink={0} resizable={true}
+      <Column<CommentViewItem> flexShrink={0} resizable={true} className="column_kotehan"
         key="userId" dataKey="userId"
         title="ユーザー名" width={100}
         cellRenderer={({ rowData }) =>
-          <div className="not_estimate">{rowData.kotehan ?? rowData.userId}</div>}
+          <div>{rowData.kotehan ?? rowData.userId}</div>
+        }
       />
       <Column flexShrink={0} resizable={true} className="column_time"
         key="time" dataKey="time" title="時間" width={50}
@@ -77,7 +80,6 @@ const _CommentView = (props: {
 }
 
 export const CommentView = React.memo(_CommentView);
-// export const CommentView = _CommentView;
 
 export const commentViewItemsSelector = createSelector(
   [
@@ -88,15 +90,16 @@ export const commentViewItemsSelector = createSelector(
   (users, chats, begin) => {
     if (begin == null) return [];
 
-    return chats.map(([, chat]) => {
-      const user = users[chat.user_id];
+    return chats.map(([, chat]): CommentViewItem => {
+      const user = users[chat.userId];
       return {
+        nanoId: chat.nanoId,
         no: chat.no,
         iconUrl: user.iconUrl,
         userId: user.userId,
         kotehan: user.kotehan ?? user.userId,
         time: calcDateToFomat(new Date(chat.date * 1000), begin),
-        comment: chat.content,
+        comment: chat.comment,
         anonymous: user.anonymous,
       }
     });

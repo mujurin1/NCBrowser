@@ -8,6 +8,7 @@ import { SystemPing } from "../types/systemWs/SystemPing";
 import { SystemWsMessage } from "../types/systemWs/SystemWsMessage";
 import { logger } from "../util/logging";
 import { getHTML } from "../util/nico";
+import { LiveInfo } from "./nicoLiveApiType";
 
 // ================= システムウェブソケットのトリガー
 const _systemWsOnOpen = new Trigger();
@@ -50,38 +51,76 @@ let _wakuStartTime: Date;
 let _receiveCommentStartMessage: string;
 
 /**
- * 
+ * 放送に接続する  
+ * 視聴権限がない場合は接続しない
  * @param liveUrl 
- * @param userId 
+ * @returns [ 放送情報のJSON, "公式" | "CH" | "ユーザー" ]
  * @throws 放送ページの応答が異常だった
  */
-export async function connectNicoLive(liveUrl: string) {
-  // TODO: すでに接続中だったら閉じる処理を書く
-  if (_systemWs != null) { }
-
+export async function connectNicoLive(liveUrl: string): Promise<LiveInfo> {
   const livePage = await getHTML(liveUrl);
+
   // ======================= System,Commentセッションへの接続
   // 参考: https://qiita.com/pasta04/items/33da06cf3c21e34fc4d1
   /** 大体放送に関する情報がここに集まってる */
   const embeddedData = JSON.parse(livePage.getElementById("embedded-data").getAttribute("data-props"));
 
-  /** システムウェブソケット接続Url */
-  const url_system: string = embeddedData.site.relive.webSocketUrl;
-  /** コメビュ利用者のユーザーID */
-  _loginUserId = embeddedData.user.id ?? "guest";
+  // memo.md に内容の例を書いている
+  const isOfficial
+    = livePage.getElementsByClassName("___program-provider-type-label___3VgIC ___program-provider-type-label___1qG1b")[0]?.innerHTML === "公式";
 
-  _systemWs = new WebSocket(url_system);
-  _systemWs.onopen = () => {
-    doSendSystem(message_system_1);
-    doSendSystem(message_system_2);
-    _systemWsOnOpen.fire();
+  const socialGroup = embeddedData.socialGroup;
+  const program = embeddedData.program;
+
+  let liveInfo: LiveInfo = {
+    liveType: socialGroup?.type,
+    homeName: socialGroup?.name,
+    homeId: socialGroup?.id,
+    description: socialGroup?.description,
+    level: socialGroup?.level,
+    isFollowed: socialGroup?.isFollowed,
+    isJoined: socialGroup?.isJoined,
+    companyName: socialGroup?.companyName,
+    isFollowerOnly: program?.isFollowerOnly,
+    isTagLocked: program?.tag?.isLocked,
+    liverName: program?.supplier?.name,
+    status: program?.status,
+    title: program?.title,
+    tags: program?.tag?.list,
+    isOfficial: isOfficial,
+    liverId: embeddedData.broadcasterBroadcastRequest?.recievedUserId
   };
-  _systemWs.onmessage = e => {
-    onMessageSystem(e);
-    _systemWsOnMessage.fire(e);
-  };
-  _systemWs.onclose = () => _systemWsOnClose.fire();
-  _systemWs.onerror = e => _systemWsOnError.fire(e);
+  if (liveInfo.liverId === "") liveInfo.liverId = undefined;
+
+  if (!liveInfo.isFollowerOnly || liveInfo.isFollowed) {
+    /** システムウェブソケット接続Url */
+    const url_system: string = embeddedData.site.relive.webSocketUrl;
+    /** コメビュ利用者のユーザーID */
+    _loginUserId = embeddedData.user.id ?? "guest";
+
+    _systemWs = new WebSocket(url_system);
+    _systemWs.onopen = () => {
+      doSendSystem(message_system_1);
+      doSendSystem(message_system_2);
+      _systemWsOnOpen.fire();
+    };
+    _systemWs.onmessage = e => {
+      onMessageSystem(e);
+      _systemWsOnMessage.fire(e);
+    };
+    _systemWs.onclose = () => _systemWsOnClose.fire();
+    _systemWs.onerror = e => _systemWsOnError.fire(e);
+  }
+
+  return liveInfo;
+}
+
+/**
+ * 放送から切断する
+ */
+export function disconnectNicoLive() {
+  _commentWs?.close();
+  _systemWs?.close();
 }
 
 /**
@@ -89,13 +128,13 @@ export async function connectNicoLive(liveUrl: string) {
  * @param message 
  */
 export function doSendSystem(message: string) {
-  logger.info(`SENT TO THE SYSTEM SERVER: ${message}`);
+  logger.info("nicoLiveApi.doSendSystem", `SENT TO THE SYSTEM SERVER: ${message}`);
   _systemWs.send(message);
 }
 
 // コメントセッションへメッセージを送る
 export function doSendComment(message: string) {
-  logger.info(`SENT TO THE COMMENT SERVER\n${message}`);
+  logger.info("nicoLiveApi.doSendComment", `SENT TO THE COMMENT SERVER\n${message}`);
   _commentWs.send(message);
 }
 
@@ -122,6 +161,7 @@ function onMessageSystem(e: MessageEvent) {
   } else if (message.type === "stream") {
   } else {
     logger.warn(
+      "nicoLiveApi.onMessageSystem",
       `システムウェブソケットが受け取ったデータは、開発者がまだ知らない形式でした
       ${message}`
     );
@@ -141,6 +181,7 @@ function receiveCommentWsMessage(e: MessageEvent) {
   } else if ("thread" in message) {
   } else {
     logger.warn(
+      "nicoLiveApi.receiveCommentWsMessage",
       `コメントウェブソケットが受信したデータは、開発者がまだ知らない形式でした
       ${message}`
     );

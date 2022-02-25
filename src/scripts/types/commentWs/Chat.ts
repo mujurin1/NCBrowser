@@ -6,7 +6,7 @@
 export type Chat = {
   /** 多分昔のアリーナなどの部屋IDのなごり？ */
   thread: string;
-  /** コメント番号 */
+  /** コメント番号。公式放送は`undefined` */
   no: number;
   /** コメント時刻 枠取得からの経過時刻 (vpos/100 => 秒) */
   vpos: number;

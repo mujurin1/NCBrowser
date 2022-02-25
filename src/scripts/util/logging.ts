@@ -7,26 +7,33 @@ export type LogLevel = "Info" | "Warn" | "Error";
 
 export type Log = {
   logLevel: LogLevel;
-  message: string;
+  message: LogMessage;
+}
+
+export type LogMessage = {
+  /** ログを書き込んだクラスや関数名等 */
+  writePoint: string;
+  /** ログに書き込む内容 */
+  content: string;
 }
 
 let logHistory: Log[] = [];
 
 export const logger = {
   /** LogLevel:`Info` でログを記録する */
-  info: (message: string) => writeLog(message, "Info"),
+  info: (writePoint: string, content: string) => writeLog(writePoint, content, "Info"),
   /** LogLevel:`Warn` でログを記録する */
-  warn: (message: string) => writeLog(message, "Warn"),
+  warn: (writePoint: string, content: string) => writeLog(writePoint, content, "Warn"),
   /** LogLevel:`Error` でログを記録する */
-  error: (message: string) => writeLog(message, "Error"),
+  error: (writePoint: string, content: string) => writeLog(writePoint, content, "Error"),
 };
 
 /**
  * ログを記録する
  * @param log 記録するログ
  */
-export function writeLog(message: string, logLevel: LogLevel) {
-  logHistory.push({ logLevel, message });
+export function writeLog(writePoint: string, content: string, logLevel: LogLevel) {
+  logHistory.push({ logLevel, message: { writePoint, content } });
 }
 
 /**

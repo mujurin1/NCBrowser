@@ -1,21 +1,26 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { store, useTypedSelector } from '../scripts/app/store';
+import { RootState, store, useTypedSelector } from '../scripts/app/store';
 import BaseTable, { AutoResizer } from 'react-base-table';
 import { CommentView, CommentViewItem } from './components/CommentView';
 import { commentWsOnOpen, receiveChat, receiveSchedule, receiveStatistics } from './api/nicoLiveApi';
-import { addChat, chatAllClear } from './features/chatData/chatDataSlice';
+import { addChat, chatAllClear } from './features/chatDataSlice';
 import { MenuBar } from './components/MenuBar';
-import { scheduleUpdate, statisticsUpdate } from './features/nicoLive/nicoLiveSlice';
-
+import { scheduleUpdate, statisticsUpdate } from './features/nicoLiveSlice';
 import 'react-base-table/styles.css';
 import '../styles/index.css';
+import { bouyomiTalk } from './api/bouyomiChanApi';
 
 commentWsOnOpen.add(() => store.dispatch(chatAllClear()));
 
 receiveChat.add(chat => {
   store.dispatch(addChat(chat));
+  const state: RootState = store.getState();
+  // 読み上げ
+  if(state.ncbOption.bouyomiChanOn) {
+    bouyomiTalk(chat.content);
+  }
 });
 receiveSchedule.add(schedule => {
   store.dispatch(scheduleUpdate(schedule));
@@ -30,25 +35,16 @@ const IndexComponent = () => {
   let table: BaseTable<CommentViewItem>;
   const setRef = (ref: BaseTable<CommentViewItem>) => table = ref;
 
-  useEffect(() => {
-    // 自動スクロール
-    if (table == null || chatCount < 2) return;
-
-    if (true)
-      table.scrollToRow(chatCount - 1, "end");
-
-  }, [chatCount])
-
   // receiveChat.add(() => {
-  //   // 自動スクロール
-  //   if (table == null) return;
-
-  //   if (true) {
-  //     table.scrollToRow(chatCount- 1, "end");
-  //     setTimeout(() => {
-  //     table.scrollToRow(chatCount- 1, "end");
-  //     }, 1000);
-  //   }
+  useEffect(() => {
+    // console.log(`自動スクロール ${chatCount}`);
+    if (table == null) return;
+    
+    // 自動スクロール
+    if (true && chatCount > 2) {
+      table.scrollToRow(chatCount - 1, "end");
+    }
+  }, [chatCount])
   // });
 
   const menuWidht = 30;
@@ -57,10 +53,10 @@ const IndexComponent = () => {
     <MenuBar />
     <AutoResizer>
       {({ width, height }) => (
-          <CommentView
-            tableSize={{ width, height: height - (menuWidht + bottomPading) }}
-            setRef={setRef} />
-        )
+        <CommentView
+          tableSize={{ width, height: height - (menuWidht + bottomPading) }}
+          setRef={setRef} />
+      )
       }
     </AutoResizer>
   </div>

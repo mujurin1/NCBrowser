@@ -1,10 +1,10 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
-import { Chat } from "../../types/commentWs/Chat";
-import { RootState } from "../../app/store";
-import { parseKotehan } from "../../util/funcs";
-import { getNicoUserIconUrl, getNicoUserName } from "../../util/nico";
+import { Chat } from "../types/commentWs/Chat";
+import { RootState } from "../app/store";
+import { parseKotehan } from "../util/funcs";
+import { getNicoUserIconUrl, getNicoUserName } from "../util/nico";
 import { WritableDraft } from "immer/dist/internal";
-import { saveUserKotehan } from "../../util/storage";
+import { saveUserKotehan } from "../util/storage";
 
 export type NicoUser = {
   /** ユーザーID */
@@ -28,17 +28,6 @@ export type NicoUser = {
    */
   kotehanNo: number | undefined;
 }
-
-export const setKotehanFromUserPage = createAsyncThunk("nicoUsers/setKotehanFromUserPage", async (userId: string) => {
-  const userName = await getNicoUserName(userId);
-  return [userId, userName, -1, false] as const;
-});
-
-// iconUrl が存在しなくてもデフォルトURLを返すので絶対にrejectしない
-export const setIconUrl = createAsyncThunk("nicoUsers/setIconUrl", async (userId: string) => {
-  const iconUrl = await getNicoUserIconUrl(Number(userId));
-  return [userId, iconUrl] as const;
-});
 
 const usersAdapter = createEntityAdapter<NicoUser>({
   selectId: model => model.userId
@@ -86,16 +75,18 @@ const nicoUsersSlice = createSlice({
     setKotehan: (state, action: PayloadAction<readonly [string, string, number, boolean]>) => {
       setKotehanLogic(state, action.payload);
     },
+    setIconUrl: (state, action: PayloadAction<readonly [string, string]>) => {
+      const [userId, iconUrl] = action.payload;
+      state.entities[userId].iconUrl = iconUrl;
+    }
   },
   extraReducers(builder) {
     builder
-      .addCase(setKotehanFromUserPage.fulfilled, (state, action) => {
-        setKotehanLogic(state, action.payload);
-      })
-      .addCase(setIconUrl.fulfilled, (state, action) => {
-        const [userId, iconUrl] = action.payload;
-        state.entities[userId].iconUrl = iconUrl;
-      })
+    // extraReducerの見本として残してる
+    // .addCase(setIconUrl.fulfilled, (state, action) => {
+    //   const [userId, iconUrl] = action.payload;
+    //   state.entities[userId].iconUrl = iconUrl;
+    // })
   }
 });
 
@@ -103,7 +94,8 @@ export const nicoUsersReducer = nicoUsersSlice.reducer;
 
 export const {
   receiveChat,
-  setKotehan
+  setKotehan,
+  setIconUrl
 } = nicoUsersSlice.actions;
 
 export const {
