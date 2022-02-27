@@ -29,3 +29,9 @@ nicoLiveApi.connectNicoLiveで実行している
   * isFollowerOnly T/F フォロワー限定。会員限定
 * broadcasterBroadcastRequest
   * recievedUserId  放送者ユーザーID。チャンネルなら空文字
+
+# Web Speech API
+音声認識の文法はJSGF  
+読み上げの文法はSSML
+
+読み上げのSSMLは読み上げエンジンによってサポートまちまちなので使えない

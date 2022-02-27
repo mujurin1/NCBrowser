@@ -1,7 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin")
-const ExtensionReloader = require("webpack-extension-reloader")
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const ExtensionReloader = require("webpack-extension-reloader");
 
 module.exports = {
   mode: "development",
@@ -9,8 +9,8 @@ module.exports = {
   devtool: false,
   // distにビルドするjs/tsファイルを書き連ねる
   entry: {
-    options: "./scripts/options.ts",
-    content: "./scripts/content.ts",
+    options: "./scripts/options.tsx",
+    content: "./scripts/content.tsx",
     index: "./scripts/index.tsx",
     // background moved to copy section because hot extension reloader pluging doesn"t work with bundled code that refers to window object
     // see more https://github.com/rubenspgcavalcante/webpack-extension-reloader/issues/125
@@ -23,7 +23,7 @@ module.exports = {
     publicPath: "./",
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
+    extensions: [".ts", ".tsx", ".js"],
   },
   module: {
     rules: [
@@ -38,7 +38,7 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: "ts-loader",
-      }
+      },
     ],
   },
   plugins: [
@@ -63,5 +63,5 @@ module.exports = {
       filename: "index.html",
       chunks: ["index"],
     }),
-  ]
+  ],
 };

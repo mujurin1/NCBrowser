@@ -10,15 +10,14 @@ import {
   receiveChat,
   receiveSchedule,
   receiveStatistics,
-  systemWsOnMessage,
-  commentWsOnMessage,
 } from "./api/nicoLiveApi";
 import { addChat, addChats, chatAllClear } from "./features/chatDataSlice";
 import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
-import { bouyomiTalk } from "./api/bouyomiChanApi";
+// import { bouyomiTalk } from "./api/bouyomiChanApi";
 import "react-base-table/styles.css";
 import "../styles/index.css";
+import { BrowserSpeechAPI } from "./api/browserSpeechApi";
 
 commentWsOnOpen.add(() => store.dispatch(chatAllClear()));
 
@@ -35,7 +34,8 @@ receiveChat.add((chat) => {
   const state: RootState = store.getState();
   // 読み上げ
   if (state.ncbOption.bouyomiChanOn) {
-    bouyomiTalk(chat.content);
+    // bouyomiTalk(chat.content);
+    BrowserSpeechAPI.Talk(chat.content);
   }
 });
 receiveSchedule.add((schedule) => {
@@ -86,7 +86,40 @@ ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
       <IndexComponent />
+      {/* <SpeechTestComponent /> */}
     </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );
+
+// function SpeechTestComponent() {
+//   const [text, setText] = useState("");
+
+//   return (
+//     <>
+//       <input type="text" onChange={(e) => setText(e.target.value)} />
+//       <br />
+//       <button
+//         onClick={() => {
+//           BrowserSpeechAPI.Talk(text);
+//         }}
+//       >
+//         読み上げキューに追加
+//       </button>
+//       <br />
+//       <button onClick={() => BrowserSpeechAPI.start()}>読み上げ開始</button>
+//       <button onClick={() => BrowserSpeechAPI.stop(false)}>読み上げ停止</button>
+//       <button onClick={() => BrowserSpeechAPI.stop(true)}>
+//         読み上げ停止（読み上げ中のもストップ）
+//       </button>
+//       <button onClick={() => BrowserSpeechAPI.skip()}>スキップ</button>
+//       <br />
+//       <hr />
+//       <button onClick={() => BrowserSpeechAPI.speechPause()}>
+//         発声一時停止
+//       </button>
+//       <button onClick={() => BrowserSpeechAPI.speechResume()}>発声再開</button>
+//       <br />
+//     </>
+//   );
+// }
