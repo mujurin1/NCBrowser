@@ -1,5 +1,4 @@
 import React from "react";
-import { speechApis } from "../../api/ncbOptionsApi";
 import { useTypedDispatch, useTypedSelector } from "../../app/store";
 import { changeSpeechApi, switchSpeech } from "../../features/ncbOptionsSlice";
 import {
@@ -11,10 +10,11 @@ import {
   Select,
   Switch,
 } from "@mui/material";
+import { speechApis } from "../../api/ncbOptionsApiType";
 
 export function Yomiage() {
   const dispatch = useTypedDispatch();
-  const ncbOption = useTypedSelector((state) => state.ncbOption.options);
+  const ncbOption = useTypedSelector((state) => state.ncbOption);
 
   const sxProp = { m: 1, minWidth: 120 };
 

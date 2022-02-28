@@ -8,15 +8,13 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useTypedDispatch, useTypedSelector } from "../app/store";
-import { switchSpeech, updateOptions } from "../features/ncbOptionsSlice";
+import { switchSpeech, loadedOptions } from "../features/ncbOptionsSlice";
 import { changeLive } from "../features/nicoLiveSlice";
 
 export const MenuBar = () => {
   const dispatch = useTypedDispatch();
   const info = useTypedSelector((state) => state.nicoLive.systemInfo);
-  const onSpeech = useTypedSelector(
-    (state) => state.ncbOption.options.yomiage.on
-  );
+  const onSpeech = useTypedSelector((state) => state.ncbOption.yomiage.on);
   const loading =
     useTypedSelector((state) => state.nicoLive.state) === "waiting";
 
@@ -68,7 +66,7 @@ export const MenuBar = () => {
         切断
       </LoadingButton>
       &ensp;
-      <Button variant="contained" onClick={() => dispatch(updateOptions())}>
+      <Button variant="contained" onClick={() => dispatch(loadedOptions())}>
         設定の反映
       </Button>
       <FormGroup>

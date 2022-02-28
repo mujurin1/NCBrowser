@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { RootState, store, useTypedSelector } from "../scripts/app/store";
@@ -15,7 +15,7 @@ import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
 import { BrowserSpeechAPI } from "./api/browserSpeechApi";
 import { bouyomiTalk } from "./api/bouyomiChanApi";
-import { updateOptions } from "./features/ncbOptionsSlice";
+import { loadedOptions } from "./features/ncbOptionsSlice";
 import "react-base-table/styles.css";
 import "../styles/index.css";
 import {
@@ -25,24 +25,21 @@ import {
 } from "./features/nicoChat/nicoChatSlice";
 
 // ローカルストレージからオプションをロードする
-store.dispatch(updateOptions());
+store.dispatch(loadedOptions());
 
 commentWsOnOpen.add(() => store.dispatch(chatMetaClear()));
 
 // コメントを纏めて取得しおえたら呼ばれる
 batchedComments.add((chats) => {
   store.dispatch(addChats(chats));
-  // chats.forEach((chat) => {
-  //   store.dispatch(addChat(chat));
-  // });
 });
 
 receiveChat.add((chat) => {
   store.dispatch(addChat(chat));
   const state: RootState = store.getState();
   // 読み上げ
-  if (state.ncbOption.options.yomiage.on) {
-    switch (state.ncbOption.options.yomiage.useSpeechApi) {
+  if (state.ncbOption.yomiage.on) {
+    switch (state.ncbOption.yomiage.useSpeechApi) {
       case "棒読みちゃん":
         bouyomiTalk(chat.content);
         break;
@@ -60,12 +57,14 @@ receiveStatistics.add((statistics) => {
 });
 
 const IndexComponent = () => {
+  const [table, setTable] = useState<BaseTable<CommentViewItem>>();
   const chatCount = useTypedSelector(
     (state) => Object.keys(state.nicoChat.chat.entities).length
   );
 
-  let table: BaseTable<CommentViewItem>;
-  const setRef = (ref: BaseTable<CommentViewItem>) => (table = ref);
+  useEffect(() => {
+    if (table == null) return;
+  }, [table]);
 
   // receiveChat.add(() => {
   useEffect(() => {
@@ -88,7 +87,7 @@ const IndexComponent = () => {
         {({ width, height }) => (
           <CommentView
             tableSize={{ width, height: height - (menuWidht + bottomPading) }}
-            setRef={setRef}
+            setRef={setTable}
           />
         )}
       </AutoResizer>

@@ -5,11 +5,11 @@ import { HashRouter, Link, Route, Routes } from "react-router-dom";
 import { store } from "../scripts/app/store";
 import { General } from "./components/options/General";
 import { Yomiage } from "./components/options/Yomiage";
-import { updateOptions } from "./features/ncbOptionsSlice";
+import { loadedOptions } from "./features/ncbOptionsSlice";
 import "../styles/options.css";
 
 // ローカルストレージからオプションをロードする
-store.dispatch(updateOptions());
+store.dispatch(loadedOptions());
 
 const OptionNavBar = () => {
   return (

@@ -9,7 +9,7 @@ export type NicoUser = {
   /** ユーザーID */
   userId: string;
   /** コメントの種別 */
-  type: "Liver" | "Listner" | "Operation" | "System";
+  type: "Liver" | "Listner" | "Operator";
   /** 184か */
   anonymous: boolean;
   /** アイコンのURL （184はダミーURL） */
@@ -43,7 +43,7 @@ export type ChatMeta = {
   /** 184か？ */
   isAnonymity: boolean;
   /** コメントユーザーの種別 */
-  senderType: "Liver" | "Listner" | "Operation";
+  senderType: "Liver" | "Listner" | "Operator";
   /** コメント */
   comment: string;
   /** 自分自身のコメントか */

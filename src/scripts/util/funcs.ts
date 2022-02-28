@@ -60,7 +60,7 @@ export function getHttpText(url: string): Promise<string> {
  */
 export function parseKotehan(chat: ChatMeta): [string, number] {
   // 運営コメなら設定しない
-  if (chat.senderType === "Operation") return ["", chat.date];
+  if (chat.senderType === "Operator") return ["", chat.date];
 
   let content = chat.comment.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる

@@ -136,7 +136,7 @@ function ChatToMeta(chat: Chat): ChatMeta {
     senderType:
       chat.premium === 3
         ? chat.anonymity === 1
-          ? "Operation"
+          ? "Operator"
           : "Liver"
         : "Listner",
     comment: chat.content,

@@ -28,7 +28,7 @@ export async function loadUserKotehan(
   const key = isAnonymouse ? "anonymousUsers" : "realUser";
   try {
     const x = await chrome.storage.local.get({ [key]: { userId } });
-    return x[key][userId];
+    return x?.[key]?.[userId];
   } catch (_) {
     return undefined;
   }

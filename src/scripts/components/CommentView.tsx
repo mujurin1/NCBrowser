@@ -1,7 +1,10 @@
 import { createSelector } from "@reduxjs/toolkit";
 import React from "react";
-import BaseTable, { Column, Size } from "react-base-table";
-import { RootState, useTypedSelector } from "../app/store";
+import BaseTable, { Column, ColumnShape, Size } from "react-base-table";
+import { columnKeys } from "../api/ncbOptionsApiType";
+import { RootState, useTypedDispatch, useTypedSelector } from "../app/store";
+import { updateCommentView } from "../features/ncbOptionsSlice";
+import { ChatMeta } from "../features/nicoChat/nicoChatTypes";
 import { calcDateToFomat } from "../util/funcs";
 
 /**
@@ -30,14 +33,44 @@ const _CommentView = (props: {
   tableSize: Size;
   setRef: (ref: BaseTable<CommentViewItem>) => void;
 }) => {
-  const comments = useTypedSelector(commentViewItemsSelector);
+  const dispatch = useTypedDispatch();
+  const commentViewOption = useTypedSelector(
+    (state) => state.ncbOption.commentView
+  );
+  const comment = useTypedSelector(commentViewItemsSelector);
+  const columnsOp = commentViewOption.columns;
+
+  const columnResize = ({
+    column,
+    width,
+  }: {
+    column: ColumnShape<CommentViewItem>;
+    width: number;
+  }) => {
+    const cKey = column.dataKey as typeof columnKeys[number];
+    dispatch(
+      updateCommentView({
+        ...commentViewOption,
+        columns: {
+          ...columnsOp,
+          [cKey]: {
+            ...columnsOp[cKey],
+            width: width,
+          },
+        },
+      })
+    );
+  };
 
   return (
     <BaseTable<CommentViewItem>
       rowKey="nanoId"
       ref={props.setRef}
-      data={comments}
-      estimatedRowHeight={20}
+      data={comment}
+      onColumnResize={columnResize}
+      estimatedRowHeight={({ rowData, rowIndex }) => {
+        return rowData.anonymous ? 20 : columnsOp["iconUrl"].width;
+      }}
       width={props.tableSize.width}
       height={props.tableSize.height}
       getScrollbarSize={() => 10}
@@ -61,31 +94,33 @@ const _CommentView = (props: {
         flexShrink={0}
         resizable={true}
         className="column_no"
-        key="no"
-        dataKey="no"
+        key={columnKeys[0]}
+        dataKey={columnKeys[0]}
         title="コメ番"
-        width={65}
+        width={columnsOp.no.width}
       />
       <Column<CommentViewItem>
         flexShrink={0}
         resizable={true}
         className="column_icon"
-        key="iconUrl"
-        dataKey="iconUrl"
+        key={columnKeys[1]}
+        dataKey={columnKeys[1]}
         title="アイコン"
-        width={50}
-        cellRenderer={({ rowData }) =>
-          rowData.anonymous ? <></> : <img src={rowData.iconUrl} />
-        }
+        width={columnsOp.iconUrl.width}
+        cellRenderer={({ rowData }) => {
+          if (rowData.anonymous) return <></>;
+          if (rowData.iconUrl != null) return <img src={rowData.iconUrl} />;
+          return <span style={{ width: "100%", paddingBottom: "100%" }} />;
+        }}
       />
       <Column<CommentViewItem>
         flexShrink={0}
         resizable={true}
         className="column_kotehan"
-        key="userId"
-        dataKey="userId"
+        key={columnKeys[2]}
+        dataKey={columnKeys[2]}
         title="ユーザー名"
-        width={100}
+        width={columnsOp.kotehan.width}
         cellRenderer={({ rowData }) => (
           <div>{rowData.kotehan ?? rowData.userId}</div>
         )}
@@ -94,19 +129,19 @@ const _CommentView = (props: {
         flexShrink={0}
         resizable={true}
         className="column_time"
-        key="time"
-        dataKey="time"
+        key={columnKeys[3]}
+        dataKey={columnKeys[3]}
         title="時間"
-        width={50}
+        width={columnsOp.time.width}
       />
       <Column
         flexShrink={1}
         resizable={false}
         flexGrow={1}
-        key="comment"
-        dataKey="comment"
+        key={columnKeys[4]}
+        dataKey={columnKeys[4]}
         title="コメント"
-        width={400}
+        width={columnsOp.comment.width}
       />
     </BaseTable>
   );
@@ -136,9 +171,28 @@ export const commentViewItemsSelector = createSelector(
         userId: user.userId,
         kotehan: user.kotehan ?? user.userId,
         time: calcDateToFomat(new Date(chat.date * 1000), begin),
-        comment: chat.comment,
+        comment: chatGetComment(chat),
         anonymous: user.anonymous,
       };
     });
   }
 );
+
+const parser = new DOMParser();
+/**
+ * 放送者コメントの一部はHTMLタグなので、ちゃんとする\
+ * <u><font color="#00CCFF"><a href="URL" target="_blank">lv**</a></font></u>
+ * @param chat
+ * @returns 表示テキスト
+ */
+function chatGetComment(chat: ChatMeta): string {
+  // prettier-ignore
+  if (
+    chat.senderType === "Liver" &&
+    chat.comment.indexOf(`<`) >= 0
+  ) {
+    const f = parser.parseFromString(chat.comment, "text/html");
+    return f.getElementsByTagName("a")[0].innerText;
+  }
+  return chat.comment;
+}
