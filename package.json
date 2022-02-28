@@ -34,6 +34,10 @@
     "webpack-extension-reloader": "^1.1.4"
   },
   "dependencies": {
+    "@emotion/react": "^11.8.1",
+    "@emotion/styled": "^11.8.1",
+    "@mui/lab": "^5.0.0-alpha.70",
+    "@mui/material": "^5.4.3",
     "@reduxjs/toolkit": "^1.7.2",
     "core-js": "^3.19.2",
     "lodash": "^4.17.21",

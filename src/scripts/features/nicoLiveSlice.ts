@@ -90,7 +90,6 @@ const nicoLiveSlice = createSlice({
       })
       .addCase(changeLive.fulfilled, (state, action) => {
         state.state = "connect";
-
         state.liveInfo = action.payload;
       })
       .addCase(changeLive.rejected, (state, action) => {

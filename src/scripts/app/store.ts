@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { chatDataReducer } from "../features/chatDataSlice";
-import { ncbOptionReducer } from "../features/ncbOptionSlice";
+import { ncbOptionReducer } from "../features/ncbOptionsSlice";
 import { nicoLiveReducer } from "../features/nicoLiveSlice";
 import { nicoUsersReducer } from "../features/nicoUsersSlice";
 

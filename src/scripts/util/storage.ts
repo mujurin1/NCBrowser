@@ -47,7 +47,7 @@ export async function saveUserKotehan(
     removeUserKotehan(userId, isAnonymouse);
     return;
   }
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
+  const key = isAnonymouse ? "anonymousUsers" : "realUser";
   // １度全件取得して追記、保存
   const x = await chrome.storage.local.get(key);
 
@@ -64,7 +64,7 @@ export async function removeUserKotehan(
   userId: string,
   isAnonymouse: boolean
 ): Promise<void> {
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
+  const key = isAnonymouse ? "anonymousUsers" : "realUser";
   const x = await chrome.storage.local.get(key);
   delete x[key][userId];
   const a = chrome.storage.local.set(x);

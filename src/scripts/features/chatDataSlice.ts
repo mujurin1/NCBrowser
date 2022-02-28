@@ -17,7 +17,6 @@ import {
 } from "./nicoUsersSlice";
 import { loadUserKotehan } from "../util/storage";
 import { getNicoUserIconUrl, getNicoUserName } from "../util/nico";
-import { sleep } from "../util/funcs";
 
 export const addChats = createAsyncThunk(
   "chatData/addChats",

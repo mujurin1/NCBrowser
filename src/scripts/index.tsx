@@ -14,10 +14,14 @@ import {
 import { addChat, addChats, chatAllClear } from "./features/chatDataSlice";
 import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
-// import { bouyomiTalk } from "./api/bouyomiChanApi";
+import { BrowserSpeechAPI } from "./api/browserSpeechApi";
+import { bouyomiTalk } from "./api/bouyomiChanApi";
+import { updateOptions } from "./features/ncbOptionsSlice";
 import "react-base-table/styles.css";
 import "../styles/index.css";
-import { BrowserSpeechAPI } from "./api/browserSpeechApi";
+
+// ローカルストレージからオプションをロードする
+store.dispatch(updateOptions());
 
 commentWsOnOpen.add(() => store.dispatch(chatAllClear()));
 
@@ -33,9 +37,15 @@ receiveChat.add((chat) => {
   store.dispatch(addChat(chat));
   const state: RootState = store.getState();
   // 読み上げ
-  if (state.ncbOption.bouyomiChanOn) {
-    // bouyomiTalk(chat.content);
-    BrowserSpeechAPI.Talk(chat.content);
+  if (state.ncbOption.options.yomiage.on) {
+    switch (state.ncbOption.options.yomiage.useSpeechApi) {
+      case "棒読みちゃん":
+        bouyomiTalk(chat.content);
+        break;
+      case "ブラウザ読み上げ":
+        BrowserSpeechAPI.Talk(chat.content);
+        break;
+    }
   }
 });
 receiveSchedule.add((schedule) => {
@@ -65,7 +75,7 @@ const IndexComponent = () => {
   }, [chatCount]);
   // });
 
-  const menuWidht = 30;
+  const menuWidht = 40;
   const bottomPading = 30;
   return (
     <div className="container">
