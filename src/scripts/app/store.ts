@@ -1,16 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { chatDataReducer } from "../features/chatDataSlice";
 import { ncbOptionReducer } from "../features/ncbOptionsSlice";
+import { nicoChatReducer } from "../features/nicoChat/nicoChatSlice";
 import { nicoLiveReducer } from "../features/nicoLiveSlice";
-import { nicoUsersReducer } from "../features/nicoUsersSlice";
 
 export const store = configureStore({
   reducer: {
-    nicoUsers: nicoUsersReducer,
-    chatData: chatDataReducer,
     nicoLive: nicoLiveReducer,
     ncbOption: ncbOptionReducer,
+    nicoChat: nicoChatReducer,
   },
 });
 

@@ -11,7 +11,6 @@ import {
   receiveSchedule,
   receiveStatistics,
 } from "./api/nicoLiveApi";
-import { addChat, addChats, chatAllClear } from "./features/chatDataSlice";
 import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
 import { BrowserSpeechAPI } from "./api/browserSpeechApi";
@@ -19,11 +18,16 @@ import { bouyomiTalk } from "./api/bouyomiChanApi";
 import { updateOptions } from "./features/ncbOptionsSlice";
 import "react-base-table/styles.css";
 import "../styles/index.css";
+import {
+  addChat,
+  addChats,
+  chatMetaClear,
+} from "./features/nicoChat/nicoChatSlice";
 
 // ローカルストレージからオプションをロードする
 store.dispatch(updateOptions());
 
-commentWsOnOpen.add(() => store.dispatch(chatAllClear()));
+commentWsOnOpen.add(() => store.dispatch(chatMetaClear()));
 
 // コメントを纏めて取得しおえたら呼ばれる
 batchedComments.add((chats) => {
@@ -57,7 +61,7 @@ receiveStatistics.add((statistics) => {
 
 const IndexComponent = () => {
   const chatCount = useTypedSelector(
-    (state) => Object.keys(state.chatData.entities).length
+    (state) => Object.keys(state.nicoChat.chat.entities).length
   );
 
   let table: BaseTable<CommentViewItem>;

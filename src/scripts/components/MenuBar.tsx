@@ -3,12 +3,9 @@ import {
   Button,
   FormControlLabel,
   FormGroup,
-  Input,
-  InputLabel,
   Switch,
   TextField,
 } from "@mui/material";
-import { padding } from "@mui/system";
 import React, { useState } from "react";
 import { useTypedDispatch, useTypedSelector } from "../app/store";
 import { switchSpeech, updateOptions } from "../features/ncbOptionsSlice";

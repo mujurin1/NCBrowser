@@ -17,7 +17,7 @@ export type Chat = {
   mail: string | undefined;
   /** ユーザーID */
   user_id: string;
-  /** 1:プレ垢 3:運営コメ */
+  /** 1:プレ垢 3:運営・主コメ */
   premium: number | undefined;
   /** 1:匿名 or 運営コメ */
   anonymity: number | undefined;

@@ -1,3 +1,4 @@
+import { ChatMeta } from "../features/nicoChat/nicoChatTypes";
 import { Chat } from "../types/commentWs/Chat";
 
 /**
@@ -61,6 +62,20 @@ export function parseKotehan(chat: Chat): [string, number] {
   if (chat.premium === 3 && chat.anonymity == 1) return ["", -1];
 
   let content = chat.content.replace("＠", "@").replace("　", " ");
+  // 最初に見つかった"@"以降の文字を調べる
+  const index = content.indexOf("@");
+  if (index < 0 || index >= content.length) return ["", -1];
+  // "@"の次が空白なら、コテハン削除
+  if (content[index + 1] == " ") {
+    return [undefined, -1];
+  }
+  return [content.substring(index + 1, content.length).split(" ")[0], chat.no];
+}
+export function parseKotehan_Meta(chat: ChatMeta): [string, number] {
+  // 運営コメなら設定しない
+  if (chat.senderType === "Operation") return ["", -1];
+
+  let content = chat.comment.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる
   const index = content.indexOf("@");
   if (index < 0 || index >= content.length) return ["", -1];

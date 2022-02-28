@@ -16,9 +16,10 @@
  */
 
 /**
- * ユーザーコテハンを取得する
+ * ローカルストレージからユーザーコテハンを取得する
  * @param userId ニコ生ユーザーID
  * @param isAnonymouse 取得するユーザーは184か
+ * @returns 保存されたコテハン。無ければ`undefined`
  */
 export async function loadUserKotehan(
   userId: string,

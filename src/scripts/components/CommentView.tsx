@@ -116,12 +116,12 @@ export const CommentView = React.memo(_CommentView);
 
 export const commentViewItemsSelector = createSelector(
   [
-    (state: RootState) => state.nicoUsers.entities,
-    (state: RootState) => state.chatData,
+    (state: RootState) => state.nicoChat.user.entities,
+    (state: RootState) => state.nicoChat.chat,
     (state: RootState) =>
-      state.nicoLive.state === "connect"
-        ? new Date(state.nicoLive.schedule.data.begin)
-        : undefined,
+      state.nicoLive.schedule?.data?.begin == null
+        ? undefined
+        : new Date(state.nicoLive.schedule.data.begin),
   ],
   (users, chats, begin) => {
     if (begin == null) return [];
