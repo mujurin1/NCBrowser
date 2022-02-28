@@ -25,7 +25,7 @@ export async function loadUserKotehan(
   userId: string,
   isAnonymouse: boolean
 ): Promise<string> {
-  const key = isAnonymouse ? "anonymousUserData" : "realUserData";
+  const key = isAnonymouse ? "anonymousUsers" : "realUser";
   try {
     const x = await chrome.storage.local.get({ [key]: { userId } });
     return x[key][userId];
@@ -34,12 +34,13 @@ export async function loadUserKotehan(
   }
 }
 /**
- * ユーザーコテハンを保存する
+ * ユーザーコテハンを更新する\
+ * `kotehan`が`undefinde`又は空文字なら削除する
  * @param userId ニコ生ユーザーID
  * @param kotehan コテハン `undefined`または空文字なら削除
  * @param isAnonymouse 取得するユーザーは184か
  */
-export async function saveUserKotehan(
+export async function updateUserKotehan(
   userId: string,
   kotehan: string | undefined,
   isAnonymouse: boolean

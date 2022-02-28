@@ -21,10 +21,10 @@ export type NicoUser = {
    */
   kotehan: string | undefined;
   /**
-   * コテハンを上書きした時のコメント番号\
+   * コテハンを上書きする強さ\
    * 初期値-1 コメント以外から取得した場合も -1
    */
-  kotehanNo: number | undefined;
+  kotehanStrength: number | undefined;
 };
 
 export type ChatMeta = {

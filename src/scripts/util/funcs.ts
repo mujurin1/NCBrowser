@@ -52,28 +52,15 @@ export function getHttpText(url: string): Promise<string> {
 
 /**
  * チャット情報からコテハンを取得する
- * @param chat チャット情報
+ * @param text 文字
  * @returns
- *   コテハンを更新 [コテハン, コテハンNo]
+ *   コテハンを更新 [コテハン, コメント時刻]\
+ *   コテハンを削除 [`undefined`, コメント時刻]\
  *   更新しない     ["", -1]
  */
-export function parseKotehan(chat: Chat): [string, number] {
+export function parseKotehan(chat: ChatMeta): [string, number] {
   // 運営コメなら設定しない
-  if (chat.premium === 3 && chat.anonymity == 1) return ["", -1];
-
-  let content = chat.content.replace("＠", "@").replace("　", " ");
-  // 最初に見つかった"@"以降の文字を調べる
-  const index = content.indexOf("@");
-  if (index < 0 || index >= content.length) return ["", -1];
-  // "@"の次が空白なら、コテハン削除
-  if (content[index + 1] == " ") {
-    return [undefined, -1];
-  }
-  return [content.substring(index + 1, content.length).split(" ")[0], chat.no];
-}
-export function parseKotehan_Meta(chat: ChatMeta): [string, number] {
-  // 運営コメなら設定しない
-  if (chat.senderType === "Operation") return ["", -1];
+  if (chat.senderType === "Operation") return ["", chat.date];
 
   let content = chat.comment.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる
@@ -81,7 +68,10 @@ export function parseKotehan_Meta(chat: ChatMeta): [string, number] {
   if (index < 0 || index >= content.length) return ["", -1];
   // "@"の次が空白なら、コテハン削除
   if (content[index + 1] == " ") {
-    return [undefined, -1];
+    return [undefined, chat.date];
   }
-  return [content.substring(index + 1, content.length).split(" ")[0], chat.no];
+  return [
+    content.substring(index + 1, content.length).split(" ")[0],
+    chat.date,
+  ];
 }

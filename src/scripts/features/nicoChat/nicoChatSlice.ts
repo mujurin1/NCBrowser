@@ -7,9 +7,9 @@ import {
 } from "@reduxjs/toolkit";
 import { store } from "../../app/store";
 import { Chat } from "../../types/commentWs/Chat";
-import { parseKotehan_Meta } from "../../util/funcs";
+import { parseKotehan } from "../../util/funcs";
 import { getNicoUserIconUrl, getNicoUserName } from "../../util/nico";
-import { loadUserKotehan } from "../../util/storage";
+import { loadUserKotehan, updateUserKotehan } from "../../util/storage";
 import { ChatMeta, NicoChat, NicoUser } from "./nicoChatTypes";
 
 const chatsAdapter = createEntityAdapter<ChatMeta>({
@@ -71,12 +71,8 @@ const nicoChatSlice = createSlice({
       chatsAdapter.removeAll(state.chat);
     },
     updateKotehan: (state, action: PayloadAction<[string, string, number]>) => {
-      const [userId, kotehan, kotehanNo] = action.payload;
-      const user = state.user.entities[userId];
-      if (user.kotehanNo < kotehanNo) {
-        user.kotehan = kotehan;
-        user.kotehanNo = kotehanNo;
-      }
+      const [userId, kotehan, kotehanStrength] = action.payload;
+      KotehanUpdate(state.user.entities[userId], kotehan, kotehanStrength);
     },
     updateIconUrl: (state, action: PayloadAction<[string, string]>) => {
       const [userId, iconUrl] = action.payload;
@@ -110,21 +106,20 @@ export const {
  * @returns [ユーザー情報, 新規ユーザーか]
  */
 function updateUser(state: NicoChat, chatMeta: ChatMeta): [NicoUser, boolean] {
-  const [kotehan, kotehanNo] = parseKotehan_Meta(chatMeta);
+  const [kotehan, kotehanStrength] = parseKotehan(chatMeta);
   let user = state.user.entities[chatMeta.userId];
-  let isNew = false;
-  if (user == null) {
-    isNew = true;
+  const isNew = user == null;
+  if (isNew) {
     user = {
       userId: chatMeta.userId,
       type: chatMeta.senderType,
       anonymous: chatMeta.isAnonymity,
       iconUrl: undefined,
       kotehan: kotehan === "" ? undefined : kotehan,
-      kotehanNo: kotehanNo,
+      kotehanStrength: kotehanStrength,
     };
   } else {
-    KotehanUpdate(user, kotehan, kotehanNo);
+    KotehanUpdate(user, kotehan, kotehanStrength);
   }
   return [user, isNew];
 }
@@ -150,10 +145,15 @@ function ChatToMeta(chat: Chat): ChatMeta {
 }
 
 /** ニコニコユーザーのコテハンを更新する */
-function KotehanUpdate(user: NicoUser, kotehan: string, kotehanNo: number) {
-  if (kotehan == null || kotehan === "") return;
-  if (user.kotehanNo < kotehanNo) {
+function KotehanUpdate(
+  user: NicoUser,
+  kotehan: string,
+  kotehanStrength: number
+) {
+  if (kotehan === "") return;
+  if (user.kotehanStrength <= kotehanStrength) {
     user.kotehan = kotehan;
-    user.kotehanNo = kotehanNo;
+    user.kotehanStrength = kotehanStrength;
+    updateUserKotehan(user.userId, kotehan, user.anonymous);
   }
 }

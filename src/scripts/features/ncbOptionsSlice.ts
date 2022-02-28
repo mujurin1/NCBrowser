@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
+  initialOptions,
   loadOptions,
   OptionsType,
   saveOptions,
@@ -20,15 +21,7 @@ function saveOption(options: OptionsType) {
 
 const ncbOptionsSlice = createSlice({
   name: "ncbOptions",
-  initialState: {
-    options: {
-      general: {},
-      yomiage: {
-        on: false,
-        useSpeechApi: "ブラウザ読み上げ",
-      },
-    },
-  } as OptionsType,
+  initialState: initialOptions,
   reducers: {
     switchSpeech(state, action: PayloadAction<boolean>) {
       state.options.yomiage.on = action.payload;
@@ -46,13 +39,13 @@ const ncbOptionsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(updateOptions.fulfilled, (state, action) => {
-      const general = action.payload.options?.general;
-      const yomiage = action.payload.options?.yomiage;
+      const general = action.payload.options.general;
+      const yomiage = action.payload.options.yomiage;
       state.options = {
         general: {},
         yomiage: {
-          on: yomiage?.on ?? false,
-          useSpeechApi: yomiage?.useSpeechApi ?? "ブラウザ読み上げ",
+          on: yomiage.on,
+          useSpeechApi: yomiage.useSpeechApi,
         },
       };
     });

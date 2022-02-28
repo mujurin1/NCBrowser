@@ -12,13 +12,27 @@ export type OptionsType = {
   };
 };
 
+export const initialOptions: OptionsType = {
+  options: {
+    general: {},
+    yomiage: {
+      on: false,
+      useSpeechApi: "ブラウザ読み上げ",
+    },
+  },
+};
+
 /**
  * オプションを取得する
  * @returns オプション
  */
 export async function loadOptions(): Promise<OptionsType> {
-  const options = await chrome.storage.local.get(_optionsKey);
-  return (await chrome.storage.local.get(_optionsKey)) as OptionsType;
+  let options = (await chrome.storage.local.get(_optionsKey)) as OptionsType;
+  if (options == null) {
+    let options = initialOptions;
+    saveOptions(options);
+  }
+  return options;
 }
 
 /**
