@@ -1,5 +1,6 @@
+import { width } from "@mui/system";
 import { createSelector } from "@reduxjs/toolkit";
-import React, { useContext, useState } from "react";
+import React, { useContext, useLayoutEffect, useRef, useState } from "react";
 import { GridChildComponentProps, VariableSizeGrid } from "react-window";
 import {
   AppState,
@@ -36,7 +37,48 @@ export type CommentViewProps = {
   height: number;
 };
 
+function Cell(props: {
+  item: CommentViewItem;
+  rowIndex: number;
+  columnIndex: number;
+  style: React.CSSProperties;
+  setRowHeight: (index: number, height: number) => void;
+}) {
+  const cellRef = useRef<HTMLDivElement>();
+  const key = columnKeys[props.columnIndex];
+
+  React.useEffect(() => {
+    props.setRowHeight(
+      props.rowIndex,
+      cellRef.current.getBoundingClientRect().height
+    );
+  }, [props.setRowHeight, props.rowIndex]);
+
+  return (
+    <div
+      ref={cellRef}
+      className={`column-${key}`}
+      style={{ ...props.style, height: "" }}
+    >
+      {props.item[key]}
+    </div>
+  );
+}
+
 export function CommentView(props: CommentViewProps) {
+  const gridRef = useRef<VariableSizeGrid<CommentViewItem[]>>();
+  const rowWidthMap = useRef<Record<number, number>>({});
+  // const [rowWidthMap, setRowHeightMap] = useState<Record<number, number>>({});
+
+  const setRowHeight = (index: number, height: number) => {
+    if (rowWidthMap.current[index] === height) return;
+    rowWidthMap.current = { ...rowWidthMap.current, [index]: height };
+    gridRef.current.resetAfterRowIndex(index);
+  };
+  const getRowHeight = (index: number) =>
+    rowWidthMap.current[index] ??
+    (itemData[index].icon == null ? 20 : commentViewOption.columns.icon.width);
+
   const itemData = useTypedSelector(commentViewItemSelector);
   const commentViewOption = useTypedSelector(
     (state) => storageSelector(state).ncbOptions.commentView
@@ -44,6 +86,7 @@ export function CommentView(props: CommentViewProps) {
 
   return (
     <VariableSizeGrid<CommentViewItem[]>
+      ref={gridRef}
       width={props.width}
       height={props.height}
       columnCount={5}
@@ -51,20 +94,19 @@ export function CommentView(props: CommentViewProps) {
         commentViewOption.columns[columnKeys[index]].width
       }
       rowCount={itemData.length}
-      rowHeight={(index) => {
-        return itemData[index].icon == null
-          ? 20
-          : commentViewOption.columns.icon.width;
-      }}
+      rowHeight={getRowHeight}
       itemData={itemData}
     >
       {(arg) => {
         const item = arg.data[arg.rowIndex];
-        const key = columnKeys[arg.columnIndex];
         return (
-          <div className={`column-${key}`} style={arg.style}>
-            {item[key]}
-          </div>
+          <Cell
+            item={item}
+            rowIndex={arg.rowIndex}
+            columnIndex={arg.columnIndex}
+            style={arg.style}
+            setRowHeight={setRowHeight}
+          />
         );
       }}
     </VariableSizeGrid>

@@ -21,6 +21,7 @@ import {
 } from "./features/nicoChat/nicoChatSlice";
 import { loadAllStorageThunk } from "./features/storageSlice";
 import { CommentView } from "./components/CommentView";
+import { Resizer } from "./components/Resizer";
 
 // ローカルストレージからオプションをロードする
 store.dispatch(loadAllStorageThunk());
@@ -56,15 +57,26 @@ receiveStatistics.add((statistics) => {
 });
 
 function ReactWindowTest() {
-  const menuWidht = 40;
+  const menuHeight = 40;
   const bottomPading = 30;
-  return <CommentView height={600} width={800} />;
+  return (
+    <>
+      <MenuBar />
+      <Resizer>
+        {(size) => (
+          <CommentView
+            width={size.width}
+            height={size.height - (menuHeight + bottomPading)}
+          />
+        )}
+      </Resizer>
+    </>
+  );
 }
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <MenuBar />
       <ReactWindowTest />
     </Provider>
   </React.StrictMode>,
