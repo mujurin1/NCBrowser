@@ -3,7 +3,6 @@ import {
   Button,
   FormControlLabel,
   FormGroup,
-  Link,
   Switch,
   TextField,
 } from "@mui/material";
@@ -29,10 +28,10 @@ export const MenuBar = (props: { className?: string }) => {
 
   const connect = () => {
     let idIndex: number;
-    ["lv", "co", "ch"].forEach((prefix) => {
+    for (const prefix of ["lv", "co", "ch"]) {
       idIndex = liveId.indexOf(prefix);
-      if (idIndex >= 0) return;
-    });
+      if (idIndex >= 0) break;
+    }
     if (idIndex === -1) return;
 
     const id = liveId.substring(idIndex);
