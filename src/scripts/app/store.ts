@@ -1,11 +1,8 @@
 import { configureStore, createSelector } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { CommentViewItem } from "../components/CommentView";
-// import { ncbOptionReducer } from "../features/ncbOptionsSlice";
 import { nicoChatReducer } from "../features/nicoChat/nicoChatSlice";
 import { nicoLiveReducer } from "../features/nicoLiveSlice";
 import { storageReducer } from "../features/storageSlice";
-import { calcDateToFomat } from "../util/funcs";
 
 export const store = configureStore({
   reducer: {

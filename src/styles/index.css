@@ -12,25 +12,25 @@ body {
 }
 
 /* コメントビューア カラム */
-.column_no {
+.column-no {
   text-align: right;
   justify-content: flex-end;
 }
-.column_icon {
+.column-icon {
   padding: 0;
 }
-.column_time {
+.column-time {
   text-align: center;
 }
-.column_name > div {
+.column-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.column_comment {
+.column-comment {
 }
 
-.column_icon_img {
+.column-icon-img {
   width: 100%;
   height: auto;
 }
