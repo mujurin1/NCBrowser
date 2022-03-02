@@ -17,7 +17,7 @@ import {
 import { changeLive } from "../features/nicoLiveSlice";
 import { loadAllStorageThunk, switchSpeech } from "../features/storageSlice";
 
-export const MenuBar = () => {
+export const MenuBar = (props: { className?: string }) => {
   const dispatch = useTypedDispatch();
   const onSpeech = useTypedSelector(
     (state) => storageSelector(state).ncbOptions.yomiage.on
@@ -32,7 +32,10 @@ export const MenuBar = () => {
     if (idIndex < 0) {
       idIndex = liveId.indexOf("co");
       if (idIndex < 0) {
-        return;
+        idIndex = liveId.indexOf("ch");
+        if (idIndex < 0) {
+          return;
+        }
       }
     }
     const id = liveId.substring(idIndex);
@@ -44,7 +47,11 @@ export const MenuBar = () => {
   };
 
   return (
-    <FormGroup className="menu-bar" sx={{ padding: "4px" }} row={true}>
+    <FormGroup
+      sx={{ padding: "4px", flexWrap: "nowrap", height: "40px" }}
+      className={`menu-bar ${props.className}`}
+      row={true}
+    >
       <TextField
         size="small"
         itemType="text"

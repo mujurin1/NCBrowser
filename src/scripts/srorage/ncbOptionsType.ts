@@ -48,7 +48,7 @@ export const initialNcbOptions: NcbOptionsStorage = {
         width: 50,
       },
       comment: {
-        width: 400,
+        width: 0,
       },
     },
   },
