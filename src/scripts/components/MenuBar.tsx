@@ -28,16 +28,13 @@ export const MenuBar = (props: { className?: string }) => {
   const [liveId, setLiveId] = useState("co3860320");
 
   const connect = () => {
-    let idIndex = liveId.indexOf("lv");
-    if (idIndex < 0) {
-      idIndex = liveId.indexOf("co");
-      if (idIndex < 0) {
-        idIndex = liveId.indexOf("ch");
-        if (idIndex < 0) {
-          return;
-        }
-      }
-    }
+    let idIndex: number;
+    ["lv", "co", "ch"].forEach((prefix) => {
+      idIndex = liveId.indexOf(prefix);
+      if (idIndex >= 0) return;
+    });
+    if (idIndex === -1) return;
+
     const id = liveId.substring(idIndex);
     dispatch(changeLive(id));
   };
