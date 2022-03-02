@@ -12,6 +12,7 @@ import {
 } from "../../srorage/nicoUsersType";
 import { Chat } from "../../types/commentWs/Chat";
 import { parseKotehan } from "../../util/funcs";
+import { logger } from "../../util/logging";
 import { getNicoUserIconUrl, getNicoUserName } from "../../util/nico";
 import { updateNicoUser } from "../storageSlice";
 import { ChatMeta, NicoChat, NicoUser } from "./nicoChatTypes";
@@ -19,8 +20,7 @@ import { ChatMeta, NicoChat, NicoUser } from "./nicoChatTypes";
 export const receiveNicoChat = createAsyncThunk(
   "nicoChat/receiveChat",
   async (chats: Chat[], { dispatch }) => {
-    if (chats.length === 1) dispatch(nicoChatSlice.actions.addChat(chats[0]));
-    else dispatch(nicoChatSlice.actions.addChats(chats));
+    dispatch(nicoChatSlice.actions.addChats(chats));
     await dispatch(batchUsers());
   }
 );
@@ -72,7 +72,7 @@ const fetchUser = createAsyncThunk(
 
 const chatsAdapter = createEntityAdapter<ChatMeta>({
   selectId: (model) => model.nanoId,
-  sortComparer: (a, b) => (a.no != null ? a.no - b.no : a.date - b.date),
+  sortComparer: (a, b) => a.date - b.date,
 });
 
 const usersAdapter = createEntityAdapter<NicoUser>({
@@ -89,21 +89,14 @@ const nicoChatSlice = createSlice({
   name: "nicoChat",
   initialState: initialState,
   reducers: {
-    addChat: (state, action: PayloadAction<Chat>) => {
-      const chat = action.payload;
-      const chatMeta = ChatToMeta(chat);
-      const [user, isNew] = updateUser(state, chatMeta);
-      chatsAdapter.addOne(state.chat, chatMeta);
-      usersAdapter.setOne(state.user, user);
-      if (isNew) state.transactionUserIds[user.userId] = undefined;
-    },
     addChats: (state, action: PayloadAction<Chat[]>) => {
       action.payload.forEach((chat) => {
         const chatMeta = ChatToMeta(chat);
         const [user, isNew] = updateUser(state, chatMeta);
         chatsAdapter.addOne(state.chat, chatMeta);
         usersAdapter.setOne(state.user, user);
-        if (isNew) state.transactionUserIds[user.userId] = undefined;
+        if (isNew && !user.anonymous)
+          state.transactionUserIds[user.userId] = undefined;
       });
     },
     startFetchUserTransaction: (
@@ -158,7 +151,7 @@ function updateUser(state: NicoChat, chatMeta: ChatMeta): [NicoUser, boolean] {
     user = {
       userId: chatMeta.userId,
       type: chatMeta.senderType,
-      anonymous: chatMeta.isAnonymity,
+      anonymous: chatMeta.anonymous,
       iconUrl: undefined,
       kotehan: kotehan === "" ? undefined : kotehan,
     };
@@ -167,14 +160,14 @@ function updateUser(state: NicoChat, chatMeta: ChatMeta): [NicoUser, boolean] {
 }
 
 function ChatToMeta(chat: Chat): ChatMeta {
-  return {
+  let chatMeta: ChatMeta = {
     nanoId: nanoid(),
     no: chat.no,
     date: chat.date,
     mail: chat.mail,
     userId: chat.user_id,
     isPremium: chat.premium === 1,
-    isAnonymity: chat.anonymity === 1,
+    anonymous: chat.anonymity === 1,
     senderType:
       chat.premium === 3
         ? chat.anonymity === 1
@@ -184,18 +177,73 @@ function ChatToMeta(chat: Chat): ChatMeta {
     comment: chat.content,
     yourpost: chat.yourpost === 1,
   };
+  chatMeta.comment = commentParse(chatMeta);
+
+  return chatMeta;
 }
 
-// /** ニコニコユーザーのコテハンを更新する */
-// function KotehanUpdate(
-//   user: NicoUser,
-//   kotehan: string,
-//   kotehanStrength: number
-// ) {
-//   if (kotehan === "") return;
-//   if (user.kotehanStrength <= kotehanStrength) {
-//     user.kotehan = kotehan;
-//     user.kotehanStrength = kotehanStrength;
-//     updateUserKotehan(user.userId, kotehan, user.anonymous);
-//   }
-// }
+/**
+ * 一部のコメントはコマンドやHTMLなので表示する文字を返す
+ * @param chatMeta
+ * @returns
+ */
+function commentParse(chatMeta: ChatMeta): string {
+  if (chatMeta.senderType === "Operator") {
+    return operatorCommentParse(chatMeta);
+  } else if (chatMeta.senderType === "Liver") {
+    return liverCommentParse(chatMeta);
+  } else {
+    return chatMeta.comment;
+  }
+}
+
+/*
+ * emotion    /emotion {text}
+ * info       /info {num} {text}
+ * > 3        /info 3 {num}分延長しました
+ * > 8        /info 8 第{num}位にランクインしました
+ * > 10       /info 10 「{text}」が好きな{num}人が来場しました
+ * spi        /spi "「{text}」がリクエストされました"
+ * nicoad     /nicoad {
+ *              "totalAdPoint":{num},
+ *              "message":"{【広告貢献{num}位】}{text}さんが{num}ptニコニ広告しました",
+ *              "version":"{num}"}
+ * disconnect /disconnect
+ */
+function operatorCommentParse(chat: ChatMeta) {
+  const command = chat.comment.substring(1, chat.comment.indexOf(" "));
+  switch (command) {
+    case "emotion":
+      return chat.comment.substring(9);
+    case "spi":
+      return chat.comment.slice(6, -1);
+    case "nicoad":
+      const text = JSON.parse(chat.comment.substring(8));
+      return text.message;
+    case "info":
+      return chat.comment; // そのまま表示（NCV準拠）
+    case "disconnect":
+      return chat.comment; // そのまま表示（NCV準拠）
+    default:
+      logger.warn(
+        `${nicoChatSlice.name}.operatorCmmentParse`,
+        `運営コメントは開発者の知らないコマンドでした\n${chat.comment}`
+      );
+      return chat.comment;
+  }
+}
+
+/*
+ * 放送者コメントの一部はHTMLタグなので、ちゃんとする\
+ * <u><font color="#00CCFF"><a href="URL" target="_blank">lv**</a></font></u>
+ * @param chat
+ * @returns 表示テキスト
+ */
+const parser = new DOMParser();
+function liverCommentParse(chat: ChatMeta): string {
+  if (chat.comment.indexOf(`<`) >= 0) {
+    const f = parser.parseFromString(chat.comment, "text/html");
+    return f.getElementsByTagName("a")[0].innerText;
+  }
+  return chat.comment;
+}

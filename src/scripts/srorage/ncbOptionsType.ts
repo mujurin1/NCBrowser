@@ -3,13 +3,7 @@ export const ncbOptionsKey = "ncbOptions";
 
 export const speechApis = ["棒読みちゃん", "ブラウザ読み上げ"] as const;
 
-export const columnKeys = [
-  "no",
-  "iconUrl",
-  "kotehan",
-  "time",
-  "comment",
-] as const;
+export const columnKeys = ["no", "icon", "name", "time", "comment"] as const;
 
 // ======================== タイプ宣言 ========================
 /** オプションストレージ項目 */
@@ -44,10 +38,10 @@ export const initialNcbOptions: NcbOptionsStorage = {
       no: {
         width: 65,
       },
-      iconUrl: {
+      icon: {
         width: 50,
       },
-      kotehan: {
+      name: {
         width: 100,
       },
       time: {

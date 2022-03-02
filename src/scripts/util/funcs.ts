@@ -1,6 +1,3 @@
-import { ChatMeta } from "../features/nicoChat/nicoChatTypes";
-import { Chat } from "../types/commentWs/Chat";
-
 /**
  * 入力内容の取得・チェック
  * @returns 視聴ページUrl

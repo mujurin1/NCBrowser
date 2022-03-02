@@ -3,6 +3,7 @@ import {
   Button,
   FormControlLabel,
   FormGroup,
+  Link,
   Switch,
   TextField,
 } from "@mui/material";
@@ -71,15 +72,9 @@ export const MenuBar = () => {
       >
         切断
       </LoadingButton>
-      &ensp;
-      <Button
-        variant="contained"
-        onClick={() => dispatch(loadAllStorageThunk())}
-      >
-        設定の反映
-      </Button>
       <FormGroup>
         <FormControlLabel
+          sx={{ paddingRight: 1 }}
           labelPlacement="start"
           label="読み上げ"
           control={
@@ -90,6 +85,20 @@ export const MenuBar = () => {
           }
         />
       </FormGroup>
+      &ensp;
+      <Button
+        variant="contained"
+        onClick={() => dispatch(loadAllStorageThunk())}
+      >
+        設定の反映
+      </Button>
+      <Button
+        variant="contained"
+        color="inherit"
+        onClick={() => window.open("options.html", "options")}
+      >
+        設定
+      </Button>
     </FormGroup>
   );
 };

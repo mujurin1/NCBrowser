@@ -37,7 +37,7 @@ export type ChatMeta = {
   /** プレ垢か？ */
   isPremium: boolean;
   /** 184か？ */
-  isAnonymity: boolean;
+  anonymous: boolean;
   /** コメントユーザーの種別 */
   senderType: "Liver" | "Listner" | "Operator";
   /** コメント */

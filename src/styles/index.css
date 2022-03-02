@@ -19,17 +19,20 @@ body {
 .column_icon {
   padding: 0;
 }
-.column_icon > img {
-  width: 100%;
-  height: auto;
-}
 .column_time {
   text-align: center;
 }
-.column_kotehan > div {
+.column_name > div {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.column_comment {
+}
+
+.column_icon_img {
+  width: 100%;
+  height: auto;
 }
 
 /*スクロールバー全体*/

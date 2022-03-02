@@ -4,12 +4,12 @@ import { Provider } from "react-redux";
 import {
   AppState,
   nicoChatSelector,
+  nicoLiveSelector,
   storageSelector,
   store,
   useTypedSelector,
 } from "../scripts/app/store";
 import BaseTable, { AutoResizer } from "react-base-table";
-import { CommentView, CommentViewItem } from "./components/CommentView";
 import {
   commentWsOnOpen,
   batchedComments,
@@ -28,6 +28,9 @@ import {
   receiveNicoChat,
 } from "./features/nicoChat/nicoChatSlice";
 import { loadAllStorageThunk } from "./features/storageSlice";
+import { CommentView, CommentViewItem } from "./components/CommentView";
+import { createSelector } from "@reduxjs/toolkit";
+import { calcDateToFomat } from "./util/funcs";
 
 // ローカルストレージからオプションをロードする
 store.dispatch(loadAllStorageThunk());
@@ -64,25 +67,24 @@ receiveStatistics.add((statistics) => {
 
 const IndexComponent = () => {
   const [table, setTable] = useState<BaseTable<CommentViewItem>>();
-  const chatCount = useTypedSelector(
-    (state) => Object.keys(nicoChatSelector(state).chat.entities).length
+  const commentViewOption = useTypedSelector(
+    (state) => storageSelector(state).ncbOptions.commentView
   );
+  const commentViewItems = useTypedSelector(commentViewItemSelector);
 
   useEffect(() => {
     if (table == null) return;
   }, [table]);
 
-  // receiveChat.add(() => {
   useEffect(() => {
     // console.log(`自動スクロール ${chatCount}`);
     if (table == null) return;
 
     // 自動スクロール
-    if (true && chatCount > 2) {
-      table.scrollToRow(chatCount - 1, "end");
+    if (true && commentViewItems.length > 2) {
+      table.scrollToRow(commentViewItems.length - 1, "end");
     }
-  }, [chatCount]);
-  // });
+  }, [commentViewItems]);
 
   const menuWidht = 40;
   const bottomPading = 30;
@@ -92,14 +94,49 @@ const IndexComponent = () => {
       <AutoResizer>
         {({ width, height }) => (
           <CommentView
-            tableSize={{ width, height: height - (menuWidht + bottomPading) }}
+            size={{ width, height: height - (menuWidht + bottomPading) }}
             setRef={setTable}
+            option={commentViewOption}
+            comments={commentViewItems}
           />
         )}
       </AutoResizer>
     </div>
   );
 };
+
+export const commentViewItemSelector = createSelector(
+  [
+    (state: AppState) => nicoChatSelector(state).user.entities,
+    (state: AppState) => nicoChatSelector(state).chat,
+    (state: AppState) =>
+      nicoLiveSelector(state).schedule?.data?.begin == null
+        ? undefined
+        : new Date(nicoLiveSelector(state).schedule.data.begin),
+    (state: AppState) =>
+      storageSelector(state).ncbOptions.commentView.columns.icon.width,
+  ],
+  (users, chats, begin, iconWidth) => {
+    if (begin == null) return [];
+
+    return chats.ids.map((id): CommentViewItem => {
+      const chatMeta = chats.entities[id];
+      const user = users[chatMeta.userId];
+      return {
+        nanoId: chatMeta.nanoId,
+        no: chatMeta.no,
+        // prettier-ignore
+        icon: chatMeta.anonymous ? <></>
+          : user.iconUrl == null ? <span style={{ width: "100%", paddingBottom: "100%" }} />
+          : <img className="column_icon_img" src={user.iconUrl} />,
+        name: user.kotehan ?? user.userId,
+        time: calcDateToFomat(new Date(chatMeta.date * 1000), begin),
+        comment: chatMeta.comment,
+        height: user.anonymous ? 20 : iconWidth,
+      };
+    });
+  }
+);
 
 ReactDOM.render(
   <React.StrictMode>
