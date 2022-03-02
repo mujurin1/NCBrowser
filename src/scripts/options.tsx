@@ -4,8 +4,9 @@ import { Provider } from "react-redux";
 import { HashRouter, Link, Route, Routes } from "react-router-dom";
 import { store } from "../scripts/app/store";
 import { Yomiage } from "./components/options/Yomiage";
-import "../styles/options.css";
 import { loadAllStorageThunk } from "./features/storageSlice";
+
+import "../styles/options.css";
 
 // ローカルストレージからオプションをロードする
 store.dispatch(loadAllStorageThunk());

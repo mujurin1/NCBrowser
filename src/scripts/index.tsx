@@ -13,8 +13,6 @@ import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
 import { BrowserSpeechAPI } from "./api/browserSpeechApi";
 import { bouyomiTalk } from "./api/bouyomiChanApi";
-import "react-base-table/styles.css";
-import "../styles/index.css";
 import {
   chatMetaClear,
   receiveNicoChat,
@@ -22,6 +20,8 @@ import {
 import { loadAllStorageThunk } from "./features/storageSlice";
 import { CommentView } from "./components/CommentView";
 import { Resizer } from "./components/Resizer";
+
+import "../styles/index.css";
 
 // ローカルストレージからオプションをロードする
 store.dispatch(loadAllStorageThunk());
