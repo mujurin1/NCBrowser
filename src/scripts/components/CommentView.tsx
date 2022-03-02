@@ -1,10 +1,17 @@
 import { createSelector } from "@reduxjs/toolkit";
 import React from "react";
 import BaseTable, { Column, ColumnShape, Size } from "react-base-table";
-import { columnKeys } from "../api/ncbOptionsApiType";
-import { RootState, useTypedDispatch, useTypedSelector } from "../app/store";
-import { updateCommentView } from "../features/ncbOptionsSlice";
+import {
+  AppState,
+  nicoChatSelector,
+  nicoLiveSelector,
+  storageSelector,
+  useTypedDispatch,
+  useTypedSelector,
+} from "../app/store";
 import { ChatMeta } from "../features/nicoChat/nicoChatTypes";
+import { updateCommentView } from "../features/storageSlice";
+import { columnKeys } from "../srorage/ncbOptionsType";
 import { calcDateToFomat } from "../util/funcs";
 
 /**
@@ -35,7 +42,7 @@ const _CommentView = (props: {
 }) => {
   const dispatch = useTypedDispatch();
   const commentViewOption = useTypedSelector(
-    (state) => state.ncbOption.commentView
+    (state) => storageSelector(state).ncbOptions.commentView
   );
   const comment = useTypedSelector(commentViewItemsSelector);
   const columnsOp = commentViewOption.columns;
@@ -151,12 +158,12 @@ export const CommentView = React.memo(_CommentView);
 
 export const commentViewItemsSelector = createSelector(
   [
-    (state: RootState) => state.nicoChat.user.entities,
-    (state: RootState) => state.nicoChat.chat,
-    (state: RootState) =>
-      state.nicoLive.schedule?.data?.begin == null
+    (state: AppState) => nicoChatSelector(state).user.entities,
+    (state: AppState) => nicoChatSelector(state).chat,
+    (state: AppState) =>
+      nicoLiveSelector(state).schedule?.data?.begin == null
         ? undefined
-        : new Date(state.nicoLive.schedule.data.begin),
+        : new Date(nicoLiveSelector(state).schedule.data.begin),
   ],
   (users, chats, begin) => {
     if (begin == null) return [];

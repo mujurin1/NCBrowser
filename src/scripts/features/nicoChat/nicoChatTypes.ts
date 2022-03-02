@@ -3,6 +3,7 @@ import { EntityState } from "@reduxjs/toolkit";
 export type NicoChat = {
   user: EntityState<NicoUser>;
   chat: EntityState<ChatMeta>;
+  transactionUserIds: Record<string, string>;
 };
 
 export type NicoUser = {
@@ -20,11 +21,6 @@ export type NicoUser = {
    * 無ければこのユーザーIDの値は保存されてない
    */
   kotehan: string | undefined;
-  /**
-   * コテハンを上書きする強さ\
-   * 初期値-1 コメント以外から取得した場合も -1
-   */
-  kotehanStrength: number | undefined;
 };
 
 export type ChatMeta = {

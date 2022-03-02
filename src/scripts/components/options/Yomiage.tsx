@@ -1,6 +1,9 @@
 import React from "react";
-import { useTypedDispatch, useTypedSelector } from "../../app/store";
-import { changeSpeechApi, switchSpeech } from "../../features/ncbOptionsSlice";
+import {
+  storageSelector,
+  useTypedDispatch,
+  useTypedSelector,
+} from "../../app/store";
 import {
   FormControl,
   FormControlLabel,
@@ -10,11 +13,14 @@ import {
   Select,
   Switch,
 } from "@mui/material";
-import { speechApis } from "../../api/ncbOptionsApiType";
+import { speechApis } from "../../srorage/ncbOptionsType";
+import { changeSpeechApi, switchSpeech } from "../../features/storageSlice";
 
 export function Yomiage() {
   const dispatch = useTypedDispatch();
-  const ncbOption = useTypedSelector((state) => state.ncbOption);
+  const ncbOption = useTypedSelector(
+    (state) => storageSelector(state).ncbOptions
+  );
 
   const sxProp = { m: 1, minWidth: 120 };
 
@@ -35,7 +41,7 @@ export function Yomiage() {
           <InputLabel id="yomiage-label">読み上げAPI</InputLabel>
           <Select
             value={ncbOption.yomiage.useSpeechApi}
-            onChange={(e) => dispatch(changeSpeechApi(e.target.value))}
+            onChange={(e) => dispatch(changeSpeechApi(e.target.value as any))}
             inputProps={{ "aria-label": "Without label" }}
             labelId="yomiage-label"
             label="読み上げAPI"

@@ -5,9 +5,10 @@ import {
   disconnectNicoLive,
 } from "../api/nicoLiveApi";
 import { LiveInfo } from "../api/nicoLiveApiType";
-import { RootState } from "../app/store";
+import { AppState, nicoLiveSelector } from "../app/store";
 import { Schedule } from "../types/systemWs/Schedule";
 import { Statistics } from "../types/systemWs/Statistics";
+import { logger } from "../util/logging";
 
 /**
  * 接続する放送を変更する\
@@ -16,9 +17,9 @@ import { Statistics } from "../types/systemWs/Statistics";
 export const changeLive = createAsyncThunk(
   "nicoLive/changeLive",
   async (liveId: string, thunkApi) => {
-    const state = thunkApi.getState() as RootState;
+    const state = thunkApi.getState() as AppState;
 
-    if (state.nicoLive.state !== "notConnect") {
+    if (nicoLiveSelector(state).state !== "notConnect") {
       disconnectNicoLive();
     }
 
@@ -60,15 +61,12 @@ export type NicoLiveType = {
    * 未接続,接続待機,接続,視聴権限無し
    */
   state: "notConnect" | "waiting" | "connect";
-  /** システムメッセージ */
-  systemInfo: string[];
 };
 
 const nicoLiveSlice = createSlice({
   name: "nicoLive",
   initialState: {
     state: "notConnect",
-    systemInfo: [],
   } as NicoLiveType,
   reducers: {
     scheduleUpdate: (state, action: PayloadAction<Schedule>) => {
@@ -82,14 +80,21 @@ const nicoLiveSlice = createSlice({
     builder
       .addCase(changeLive.pending, (state, action) => {
         state.state = "waiting";
+        return state;
       })
       .addCase(changeLive.fulfilled, (state, action) => {
         state.state = "connect";
         state.liveInfo = action.payload;
+        return state;
       })
       .addCase(changeLive.rejected, (state, action) => {
         state.state = "notConnect";
-        state.systemInfo.push(action.payload as string);
+        logger.error(
+          "NicoLive",
+          `${state.liveInfo.liverId} に接続出来ませんでした。\n
+          ${action.payload as string}`
+        );
+        return state;
       });
   },
 });

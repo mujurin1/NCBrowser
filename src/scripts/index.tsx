@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { RootState, store, useTypedSelector } from "../scripts/app/store";
+import {
+  AppState,
+  nicoChatSelector,
+  storageSelector,
+  store,
+  useTypedSelector,
+} from "../scripts/app/store";
 import BaseTable, { AutoResizer } from "react-base-table";
 import { CommentView, CommentViewItem } from "./components/CommentView";
 import {
@@ -15,31 +21,31 @@ import { MenuBar } from "./components/MenuBar";
 import { scheduleUpdate, statisticsUpdate } from "./features/nicoLiveSlice";
 import { BrowserSpeechAPI } from "./api/browserSpeechApi";
 import { bouyomiTalk } from "./api/bouyomiChanApi";
-import { loadedOptions } from "./features/ncbOptionsSlice";
 import "react-base-table/styles.css";
 import "../styles/index.css";
 import {
-  addChat,
-  addChats,
   chatMetaClear,
+  receiveNicoChat,
 } from "./features/nicoChat/nicoChatSlice";
+import { loadAllStorageThunk } from "./features/storageSlice";
 
 // ローカルストレージからオプションをロードする
-store.dispatch(loadedOptions());
+store.dispatch(loadAllStorageThunk());
 
 commentWsOnOpen.add(() => store.dispatch(chatMetaClear()));
 
 // コメントを纏めて取得しおえたら呼ばれる
 batchedComments.add((chats) => {
-  store.dispatch(addChats(chats));
+  store.dispatch(receiveNicoChat(chats));
 });
 
 receiveChat.add((chat) => {
-  store.dispatch(addChat(chat));
-  const state: RootState = store.getState();
+  store.dispatch(receiveNicoChat([chat]));
+  const state: AppState = store.getState();
+  const storage = storageSelector(state);
   // 読み上げ
-  if (state.ncbOption.yomiage.on) {
-    switch (state.ncbOption.yomiage.useSpeechApi) {
+  if (storage.ncbOptions.yomiage.on) {
+    switch (storage.ncbOptions.yomiage.useSpeechApi) {
       case "棒読みちゃん":
         bouyomiTalk(chat.content);
         break;
@@ -59,7 +65,7 @@ receiveStatistics.add((statistics) => {
 const IndexComponent = () => {
   const [table, setTable] = useState<BaseTable<CommentViewItem>>();
   const chatCount = useTypedSelector(
-    (state) => Object.keys(state.nicoChat.chat.entities).length
+    (state) => Object.keys(nicoChatSelector(state).chat.entities).length
   );
 
   useEffect(() => {

@@ -1,4 +1,6 @@
-// ======================== 列挙型宣言 ========================
+// ======================== 定数宣言 ========================
+export const ncbOptionsKey = "ncbOptions";
+
 export const speechApis = ["棒読みちゃん", "ブラウザ読み上げ"] as const;
 
 export const columnKeys = [
@@ -10,31 +12,29 @@ export const columnKeys = [
 ] as const;
 
 // ======================== タイプ宣言 ========================
-
+/** オプションストレージ項目 */
+export type NcbOptionsStorage = {
+  yomiage: YomiageStorage;
+  commentView: CommentViewStorage;
+};
 // ================= 読み上げ =================
-export type YomiageOption = {
+export type YomiageStorage = {
   on: boolean;
   useSpeechApi: typeof speechApis[number];
 };
 // ================= コメントビュー =================
-export type ColumnOption = {
+export type ColumnStorage = {
   width: number;
 };
-export type ColumnOptions = { [P in typeof columnKeys[number]]: ColumnOption };
-export type CommentViewOption = {
-  columns: ColumnOptions;
+export type ColumnsStorage = {
+  [P in typeof columnKeys[number]]: ColumnStorage;
+};
+export type CommentViewStorage = {
+  columns: ColumnsStorage;
 };
 
-// ======================== オプション ========================
-export type OptionsType = {
-  general: {};
-  yomiage: YomiageOption;
-  commentView: CommentViewOption;
-};
-
-// ======================== オプション既定値 ========================
-export const initialOptions: OptionsType = {
-  general: {},
+/** オプションストレージ初期値 */
+export const initialNcbOptions: NcbOptionsStorage = {
   yomiage: {
     on: false,
     useSpeechApi: "ブラウザ読み上げ",

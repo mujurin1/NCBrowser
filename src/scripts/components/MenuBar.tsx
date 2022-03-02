@@ -7,16 +7,22 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useTypedDispatch, useTypedSelector } from "../app/store";
-import { switchSpeech, loadedOptions } from "../features/ncbOptionsSlice";
+import {
+  nicoLiveSelector,
+  storageSelector,
+  useTypedDispatch,
+  useTypedSelector,
+} from "../app/store";
 import { changeLive } from "../features/nicoLiveSlice";
+import { loadAllStorageThunk, switchSpeech } from "../features/storageSlice";
 
 export const MenuBar = () => {
   const dispatch = useTypedDispatch();
-  const info = useTypedSelector((state) => state.nicoLive.systemInfo);
-  const onSpeech = useTypedSelector((state) => state.ncbOption.yomiage.on);
+  const onSpeech = useTypedSelector(
+    (state) => storageSelector(state).ncbOptions.yomiage.on
+  );
   const loading =
-    useTypedSelector((state) => state.nicoLive.state) === "waiting";
+    useTypedSelector((state) => nicoLiveSelector(state).state) === "waiting";
 
   const [liveId, setLiveId] = useState("co3860320");
 
@@ -66,7 +72,10 @@ export const MenuBar = () => {
         切断
       </LoadingButton>
       &ensp;
-      <Button variant="contained" onClick={() => dispatch(loadedOptions())}>
+      <Button
+        variant="contained"
+        onClick={() => dispatch(loadAllStorageThunk())}
+      >
         設定の反映
       </Button>
       <FormGroup>
@@ -80,7 +89,6 @@ export const MenuBar = () => {
             />
           }
         />
-        {/* <span>{info[0]}</span> */}
       </FormGroup>
     </FormGroup>
   );

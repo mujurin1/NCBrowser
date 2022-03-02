@@ -3,13 +3,12 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { HashRouter, Link, Route, Routes } from "react-router-dom";
 import { store } from "../scripts/app/store";
-import { General } from "./components/options/General";
 import { Yomiage } from "./components/options/Yomiage";
-import { loadedOptions } from "./features/ncbOptionsSlice";
 import "../styles/options.css";
+import { loadAllStorageThunk } from "./features/storageSlice";
 
 // ローカルストレージからオプションをロードする
-store.dispatch(loadedOptions());
+store.dispatch(loadAllStorageThunk());
 
 const OptionNavBar = () => {
   return (
@@ -31,7 +30,7 @@ const OptionComponent = () => {
     <>
       <OptionNavBar />
       <Routes>
-        <Route path="/" element={<General />} />
+        <Route path="/" element={<>NONE</>} />
         <Route path="/speech" element={<Yomiage />} />
         <Route path="*" element={<span>NOT FOUND</span>} />
       </Routes>

@@ -51,27 +51,21 @@ export function getHttpText(url: string): Promise<string> {
 }
 
 /**
- * チャット情報からコテハンを取得する
+ * テキストからコテハンを取得する
  * @param text 文字
  * @returns
- *   コテハンを更新 [コテハン, コメント時刻]\
- *   コテハンを削除 [`undefined`, コメント時刻]\
- *   更新しない     ["", -1]
+ *   コテハンを更新 コテハン
+ *   コテハンを削除 `undefined`
+ *   更新しない     ""
  */
-export function parseKotehan(chat: ChatMeta): [string, number] {
-  // 運営コメなら設定しない
-  if (chat.senderType === "Operator") return ["", chat.date];
-
-  let content = chat.comment.replace("＠", "@").replace("　", " ");
+export function parseKotehan(text: string): string {
+  let content = text.replace("＠", "@").replace("　", " ");
   // 最初に見つかった"@"以降の文字を調べる
   const index = content.indexOf("@");
-  if (index < 0 || index >= content.length) return ["", -1];
+  if (index < 0 || index >= content.length) return "";
   // "@"の次が空白なら、コテハン削除
   if (content[index + 1] == " ") {
-    return [undefined, chat.date];
+    return undefined;
   }
-  return [
-    content.substring(index + 1, content.length).split(" ")[0],
-    chat.date,
-  ];
+  return content.substring(index + 1, content.length).split(" ")[0];
 }
