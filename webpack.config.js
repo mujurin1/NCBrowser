@@ -48,6 +48,7 @@ module.exports = {
         // { from: "assets", to: "assets" },
         { from: "styles", to: "styles" },
         { from: "manifest.json", to: "manifest.json" },
+        { from: "rules.json", to: "rules.json" },
         { from: "scripts/background.ts", to: "background.js" },
       ],
     }),
