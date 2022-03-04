@@ -1,7 +1,13 @@
 import { width } from "@mui/system";
 import { createSelector } from "@reduxjs/toolkit";
 import { iteratorSymbol } from "immer/dist/internal";
-import React, { useContext, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   GridChildComponentProps,
   VariableSizeGrid,
@@ -12,6 +18,7 @@ import {
   nicoChatSelector,
   nicoLiveSelector,
   storageSelector,
+  useTypedDispatch,
   useTypedSelector,
 } from "../app/store";
 import {
@@ -26,6 +33,8 @@ import { calcDateToFomat } from "../util/funcs";
 
 import "../../styles/comment-view.css";
 import { defaultIconUrl } from "../util/nico";
+import { ResizableAlign } from "./ResizableAlign";
+import { resizeHeader } from "../features/storageSlice";
 
 /**
  * CommentViewに表示する情報
@@ -53,30 +62,60 @@ export type CommentViewProps = {
 };
 
 export function CommentView(props: CommentViewProps) {
+  const dispatch = useTypedDispatch();
   const listRef = useRef<VariableSizeList<CommentViewItem[]>>();
   const itemData = useTypedSelector(commentViewItemSelector);
   const option = useTypedSelector(
     (state) => storageSelector(state).ncbOptions.commentView
   );
-  const [heightMap, setHeightMap] = useState<Record<number, number>>({});
+  const [rowHeightMap, setRowHeightMap] = useState<Record<number, number>>({});
+  const [columnWidthMap, setColumnWidthMap] = useState<ColumnsStorage>();
+
+  useEffect(() => {
+    setColumnWidthMap(option.columns);
+  }, [option.columns]);
 
   const setHeight = (index: number, height: number) => {
-    if (heightMap[index] === height) return;
-    setHeightMap((oldHeightMap) => {
+    if (rowHeightMap[index] === height) return;
+    setRowHeightMap((oldHeightMap) => {
       return { ...oldHeightMap, [index]: height };
     });
     listRef.current.resetAfterIndex(index);
   };
+
+  function onResize(index: number, width: number, resized: boolean) {
+    setColumnWidthMap((oldColumnWidthMap) => {
+      const newValue = { ...oldColumnWidthMap };
+      newValue[columnKeys[index]].width = width;
+      return newValue;
+    });
+    if (resized) dispatch(resizeHeader([columnKeys[index], width]));
+  }
+
   const getSize = (index: number) =>
-    heightMap[index] ?? option.columns.icon.width;
+    rowHeightMap[index] ?? option.columns.icon.width;
 
   const headerWidth = 30;
+  const itemWidth = columnKeys.map((key) => option.columns[key].width);
+  const minWidth = [40, 10, 60, 30, 50];
 
   return (
     <div className="comment-view">
-      <HeaderView columnsOption={option.columns} />
+      <ResizableAlign
+        onResize={onResize}
+        itemWidth={itemWidth}
+        height={30}
+        minWidth={minWidth}
+      >
+        {columnKeys.map((key) => (
+          <div key={key} className="comment-view-header-item">
+            {columnNames[key]}
+          </div>
+        ))}
+      </ResizableAlign>
       <VariableSizeList<CommentViewItem[]>
         ref={listRef}
+        className="comment-view-table"
         itemCount={itemData.length}
         width={props.width}
         height={props.height - headerWidth}
@@ -89,79 +128,10 @@ export function CommentView(props: CommentViewProps) {
             item={arg.data[arg.index]}
             setHeight={setHeight}
             style={arg.style}
-            columnsOption={option.columns}
+            itemWidth={columnWidthMap}
           />
         )}
       </VariableSizeList>
-    </div>
-  );
-}
-
-function HeaderView(props: { columnsOption: ColumnsStorage }) {
-  // const resizeTargetRef = useRef<HTMLElement>();
-  const [resizeTarget, setResizeTarget] = useState<{
-    key: ColumnKeysType;
-    width: number;
-    target: HTMLElement;
-  }>();
-
-  function resizeMouseDown(
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    key: ColumnKeysType
-  ) {
-    const target = e.currentTarget.parentElement;
-
-    setResizeTarget({ key, width: target.clientWidth, target });
-  }
-  function resizeMouseMove(e: MouseEvent) {
-    if (resizeTarget == null) return;
-    setResizeTarget((oldResizeTarget) => {
-      const newResizeTarget = { ...oldResizeTarget };
-      newResizeTarget.width += e.movementX;
-      if (newResizeTarget.width < 10) newResizeTarget.width = 10;
-      console.log(newResizeTarget.width);
-
-      newResizeTarget.target.style.width = `${newResizeTarget.width}px`;
-      return newResizeTarget;
-    });
-    // resizeTarget[1].style.width
-    // console.log(` ${e.clientX}, ${e.movementX}`);
-  }
-  function resizeMouseUp(e: MouseEvent) {
-    if (resizeTarget == null) return;
-    setResizeTarget(undefined);
-  }
-
-  useLayoutEffect(() => {
-    window.addEventListener("mousemove", resizeMouseMove);
-    window.addEventListener("mouseup", resizeMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", resizeMouseMove);
-      window.removeEventListener("mouseup", resizeMouseUp);
-    };
-  }, [resizeTarget]);
-
-  return (
-    <div className="comment-view-header">
-      {columnKeys.map((key) => (
-        <div
-          key={key}
-          style={{
-            width: props.columnsOption[key].width,
-          }}
-          className={`comment-view-header-${key}`}
-        >
-          {columnNames[key]}
-          {key === "comment" ? (
-            <></>
-          ) : (
-            <div
-              className="comment-view-header-resizer"
-              onMouseDown={(e) => resizeMouseDown(e, key)}
-            />
-          )}
-        </div>
-      ))}
     </div>
   );
 }
@@ -174,19 +144,23 @@ function HeaderView(props: { columnsOption: ColumnsStorage }) {
 function RowView(props: {
   item: CommentViewItem;
   index: number;
+  itemWidth: ColumnsStorage;
   setHeight: (index: number, height: number) => void;
   style: React.CSSProperties;
-  columnsOption: ColumnsStorage;
+  // columnsOption: ColumnsStorage;
 }) {
+  console.log(props.itemWidth);
+
   const rowRef = useRef<HTMLDivElement>();
+  const index = props.index;
 
   React.useLayoutEffect(() => {
     const width = rowRef.current.clientHeight;
     if (
       props.item["icon"] == undefined ||
-      props.columnsOption.icon.width <= width
+      props.itemWidth["icon"].width <= width
     )
-      props.setHeight(props.index, rowRef.current.clientHeight);
+      props.setHeight(index, rowRef.current.clientHeight);
   }, [props.setHeight, props.item]);
 
   return (
@@ -200,7 +174,8 @@ function RowView(props: {
         <div
           key={key}
           style={{
-            width: props.columnsOption[key].width,
+            width: props.itemWidth[key].width,
+            // width: props.columnsOption[key].width,
           }}
           className={`comment-view-row-${key}`}
         >

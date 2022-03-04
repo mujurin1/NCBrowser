@@ -3,44 +3,14 @@
   color: black;
 }
 
-/* コメントビューヘッダー */
-.comment-view-header {
-  display: flex;
-  height: 50px;
-  align-items: center;
-  text-align: center;
-}
-.comment-view-header > div {
-  position: relative;
-  height: 100%;
-}
-/* コメントビューヘッダー つまみ */
-.comment-view-header-resizer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 3px;
-  height: 100%;
-  background-color: gray;
-}
-
-/* 各ヘッダー */
-.comment-view-header-no {
-}
-.comment-view-header-icon {
-}
-.comment-view-header-name {
-}
-.comment-view-header-time {
-}
-.comment-view-header-comment {
-  flex-grow: 1;
-  height: auto;
-}
-
 /* コメントビューテーブル */
 .comment-view-table {
   color: black;
+}
+
+/* コメントビューヘッダー 要素 */
+.comment-view-header-item {
+  white-space: nowrap;
 }
 
 /* 各列 */

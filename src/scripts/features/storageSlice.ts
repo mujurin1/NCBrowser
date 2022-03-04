@@ -13,7 +13,11 @@ import {
   saveAllStorage,
 } from "../srorage/all";
 import { saveNcbOptions } from "../srorage/ncbOptions";
-import { speechApis, CommentViewStorage } from "../srorage/ncbOptionsType";
+import {
+  speechApis,
+  CommentViewStorage,
+  ColumnKeysType,
+} from "../srorage/ncbOptionsType";
 import {
   nicoUsersAnonymityKey,
   nicoUsersRealKey,
@@ -69,6 +73,10 @@ const storageSlice = createSlice({
     updateCommentView(state, action: PayloadAction<CommentViewStorage>) {
       state.storage.ncbOptions.commentView = action.payload;
     },
+    resizeHeader(state, action: PayloadAction<[ColumnKeysType, number]>) {
+      const [key, width] = action.payload;
+      state.storage.ncbOptions.commentView.columns[key].width = width;
+    },
     updateNicoUser(state, action: PayloadAction<NicoUser>) {
       const user = action.payload;
       const key = user.anonymous ? nicoUsersAnonymityKey : nicoUsersRealKey;
@@ -110,6 +118,10 @@ export const switchSpeech = createUpdateThunk(
 export const changeSpeechApi = createUpdateThunk(
   "changeSpeechApi",
   storageSlice.actions.changeSpeechApi
+);
+export const resizeHeader = createUpdateThunk(
+  "resizeHeader",
+  storageSlice.actions.resizeHeader
 );
 export const updateCommentView = createUpdateThunk(
   "updateCommentView",

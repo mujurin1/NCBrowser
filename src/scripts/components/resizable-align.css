@@ -1,0 +1,24 @@
+.resizable-align {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+.resizable-align-item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.resizable-align-end {
+  flex-grow: 1;
+  height: 100%;
+}
+.resizable-align-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 100%;
+  background-color: gray;
+}
