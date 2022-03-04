@@ -7,6 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useState } from "react";
+import { BrowserSpeechAPI } from "../api/browserSpeechApi";
 import {
   nicoLiveSelector,
   storageSelector,
@@ -16,15 +17,19 @@ import {
 import { changeLive } from "../features/nicoLiveSlice";
 import { loadAllStorageThunk, switchSpeech } from "../features/storageSlice";
 
+import "../../styles/menu-bar.css";
+
 export const MenuBar = (props: { className?: string }) => {
   const dispatch = useTypedDispatch();
-  const onSpeech = useTypedSelector(
-    (state) => storageSelector(state).ncbOptions.yomiage.on
-  );
   const loading =
     useTypedSelector((state) => nicoLiveSelector(state).state) === "waiting";
-
   const [liveId, setLiveId] = useState("co3860320");
+  const nicoLiveState = useTypedSelector(
+    (state) => nicoLiveSelector(state).state
+  );
+  const yomiage = useTypedSelector(
+    (state) => storageSelector(state).ncbOptions.yomiage
+  );
 
   const connect = () => {
     let idIndex: number;
@@ -39,7 +44,7 @@ export const MenuBar = (props: { className?: string }) => {
   };
 
   const disconnect = () => {
-    dispatch(changeLive(""));
+    if (nicoLiveState === "connect") dispatch(changeLive(""));
   };
 
   return (
@@ -82,8 +87,13 @@ export const MenuBar = (props: { className?: string }) => {
           label="読み上げ"
           control={
             <Switch
-              checked={onSpeech}
-              onChange={() => dispatch(switchSpeech(!onSpeech))}
+              checked={yomiage.on}
+              onChange={() => {
+                if (yomiage.on && yomiage.useSpeechApi === "ブラウザ読み上げ") {
+                  BrowserSpeechAPI.reset();
+                }
+                dispatch(switchSpeech(!yomiage.on));
+              }}
             />
           }
         />

@@ -1,26 +1,6 @@
 [
   {
     "id": 1,
-    "priority": 2,
-    "action": {
-      "type": "modifyHeaders",
-      "requestHeaders": [
-        {
-          "header": "User-Agent",
-          "operation": "set",
-          "value": "NCBrowser"
-        }
-      ]
-    },
-    "condition": {
-      "urlFilter": "*",
-      "domains": [
-        "liijnbhoogljjeohejeideahjgehjhnn"
-      ]
-    }
-  },
-  {
-    "id": 2,
     "priority": 1,
     "action": {
       "type": "modifyHeaders",
@@ -33,7 +13,7 @@
       ]
     },
     "condition": {
-      "urlFilter": "httpbin.org",
+      "urlFilter": "*",
       "domains": [
         "liijnbhoogljjeohejeideahjgehjhnn"
       ]

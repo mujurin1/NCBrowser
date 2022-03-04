@@ -189,7 +189,7 @@ function onMessageSystem(e: MessageEvent) {
   } else {
     logger.warn(
       "nicoLiveApi.onMessageSystem",
-      `システムウェブソケットが受け取ったデータは、開発者がまだ知らない形式でした
+      `システムウェブソケットが受け取ったデータは開発者がまだ知らない形式でした\n
       ${message}`
     );
   }
@@ -220,7 +220,7 @@ function receiveCommentWsMessage(e: MessageEvent) {
   } else {
     logger.warn(
       "nicoLiveApi.receiveCommentWsMessage",
-      `コメントウェブソケットが受信したデータは、開発者がまだ知らない形式でした
+      `コメントウェブソケットが受信したデータは開発者がまだ知らない形式でした\n
       ${message}`
     );
   }

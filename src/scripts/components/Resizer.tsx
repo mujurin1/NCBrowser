@@ -1,16 +1,24 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 
 export type Size = {
   width: number;
   height: number;
 };
 
-export function Resizer({ children }: { children: (size: Size) => void }) {
+export function Resizer(props: {
+  children: (size: Size) => JSX.Element;
+  className?: string;
+}) {
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const divRef = useRef<HTMLDivElement>();
 
   useLayoutEffect(() => {
     function updateSize() {
-      setSize({ width: window.innerWidth, height: window.innerHeight });
+      // setSize({ width: window.innerWidth, height: window.innerHeight });
+      setSize({
+        width: divRef.current.clientWidth,
+        height: window.innerHeight,
+      });
     }
 
     window.addEventListener("resize", updateSize);
@@ -19,5 +27,9 @@ export function Resizer({ children }: { children: (size: Size) => void }) {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  return <>{children(size)}</>;
+  return (
+    <div ref={divRef} className={props.className}>
+      {props.children(size)}
+    </div>
+  );
 }

@@ -1,0 +1,82 @@
+/* コメントビュー全体 */
+.comment-view {
+  color: black;
+}
+
+/* コメントビューヘッダー */
+.comment-view-header {
+  display: flex;
+  height: 50px;
+  align-items: center;
+  text-align: center;
+}
+.comment-view-header > div {
+  position: relative;
+  height: 100%;
+}
+/* コメントビューヘッダー つまみ */
+.comment-view-header-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 100%;
+  background-color: gray;
+}
+
+/* 各ヘッダー */
+.comment-view-header-no {
+}
+.comment-view-header-icon {
+}
+.comment-view-header-name {
+}
+.comment-view-header-time {
+}
+.comment-view-header-comment {
+  flex-grow: 1;
+  height: auto;
+}
+
+/* コメントビューテーブル */
+.comment-view-table {
+  color: black;
+}
+
+/* 各列 */
+.comment-view-row {
+  display: flex;
+  word-break: break-all;
+  align-items: center;
+  border-top: 1px dashed red;
+}
+.comment-view-row > div {
+  padding: 2px;
+}
+
+/* 各列のアイテム */
+.comment-view-row-no {
+  text-align: right;
+  justify-content: flex-end;
+}
+.comment-view-row-icon {
+  padding: 0;
+}
+.comment-view-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.comment-view-row-time {
+  text-align: center;
+}
+.comment-view-row-comment {
+  flex-grow: 1;
+  height: auto;
+}
+
+/* アイコン画像 */
+.comment-view-row-icon > img {
+  width: 100%;
+  height: auto;
+}

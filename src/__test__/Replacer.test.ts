@@ -46,9 +46,9 @@ describe("Replacer", () => {
         "URL省略",
         1
       );
-      expect(replacer.repraceText("Https://example.com/index?target=10")).toBe(
-        "URL省略"
-      );
+      expect(
+        replacer.repraceText("Https://example.com/index?target=10#AA")
+      ).toBe("URL省略");
     });
     test("循環", () => {
       const replacer = new Replacer();

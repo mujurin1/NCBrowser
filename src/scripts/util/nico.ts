@@ -68,7 +68,7 @@ export function createNicoUserIconUrl(id: number): string {
   )}/${id}.jpg`;
 }
 
-const defaultIconUrl =
+export const defaultIconUrl =
   "https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank.jpg";
 
 /**

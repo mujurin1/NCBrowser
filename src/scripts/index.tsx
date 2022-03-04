@@ -62,10 +62,9 @@ function ReactWindowTest() {
   return (
     <div className="container" style={{}}>
       <MenuBar className="content" />
-      <Resizer>
+      <Resizer className="content">
         {(size) => (
           <CommentView
-            className="content"
             width={size.width}
             height={size.height - (menuHeight + bottomPading)}
           />

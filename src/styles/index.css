@@ -11,35 +11,6 @@ body {
   min-width: 400px;
 }
 
-.row {
-  display: flex;
-  word-break: break-all;
-}
-/* コメントビューア カラム */
-.column-no {
-  text-align: right;
-  justify-content: flex-end;
-}
-.column-icon {
-  padding: 0;
-}
-.column-time {
-  text-align: center;
-}
-.column-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.column-comment {
-  flex-grow: 1;
-}
-
-.column-icon-img {
-  width: 100%;
-  height: auto;
-}
-
 /*スクロールバー全体*/
 ::-webkit-scrollbar {
   width: 10px;

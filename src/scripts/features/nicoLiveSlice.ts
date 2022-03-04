@@ -85,15 +85,23 @@ const nicoLiveSlice = createSlice({
       .addCase(changeLive.fulfilled, (state, action) => {
         state.state = "connect";
         state.liveInfo = action.payload;
+        logger.info(
+          "NicoLive.connect",
+          `${state.liveInfo.liverId} に接続しました`
+        );
         return state;
       })
       .addCase(changeLive.rejected, (state, action) => {
         state.state = "notConnect";
-        logger.error(
-          "NicoLive",
-          `${state.liveInfo.liverId} に接続出来ませんでした。\n
-          ${action.payload as string}`
-        );
+        if (state.liveInfo?.liverId == null) {
+          logger.info("NicoLive.connect", "切断しました");
+        } else {
+          logger.error(
+            "NicoLive.connect",
+            `${state.liveInfo.liverId} に接続出来ませんでした。\n
+            ${action.payload as string}`
+          );
+        }
         return state;
       });
   },

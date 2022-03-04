@@ -4,6 +4,7 @@ import {
   createSlice,
   PayloadAction,
 } from "@reduxjs/toolkit";
+import { BrowserSpeechAPI } from "../api/browserSpeechApi";
 import { AppState } from "../app/store";
 import {
   AllStorage,
@@ -89,10 +90,10 @@ const storageSlice = createSlice({
         return state;
       })
       .addCase(loadAllStorageThunk.rejected, (state, action) => {
-        state.locked = true;
+        state.locked = false;
         logger.error(
           "Storage.LoadAllStorage",
-          "ストレージのデータの読み取りに失敗しました"
+          "ストレージの読み取りに失敗しました"
         );
         return state;
       });

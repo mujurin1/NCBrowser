@@ -5,7 +5,17 @@ export const speechApis = ["棒読みちゃん", "ブラウザ読み上げ"] as 
 
 export const columnKeys = ["no", "icon", "name", "time", "comment"] as const;
 
+export const columnNames = {
+  [columnKeys[0]]: "コメ番",
+  [columnKeys[1]]: "",
+  [columnKeys[2]]: "コテハン",
+  [columnKeys[3]]: "時間",
+  [columnKeys[4]]: "コメント",
+} as const;
+
 // ======================== タイプ宣言 ========================
+export type ColumnKeysType = typeof columnKeys[number];
+
 /** オプションストレージ項目 */
 export type NcbOptionsStorage = {
   yomiage: YomiageStorage;
@@ -21,7 +31,7 @@ export type ColumnStorage = {
   width: number;
 };
 export type ColumnsStorage = {
-  [P in typeof columnKeys[number]]: ColumnStorage;
+  [P in ColumnKeysType]: ColumnStorage;
 };
 export type CommentViewStorage = {
   columns: ColumnsStorage;
