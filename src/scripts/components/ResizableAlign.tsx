@@ -38,30 +38,27 @@ export function ResizableAlign(props: {
   }
   function onMouseMove(e: MouseEvent) {
     if (resizeTarget == null) return;
+    const newResizeTarget = { ...resizeTarget };
 
-    setResizeTarget((oldResizeTarget) => {
-      const newResizeTarget = { ...oldResizeTarget };
-      const index = newResizeTarget.index;
-      const min = props.minWidth?.[index] ?? 1;
+    const index = newResizeTarget.index;
+    const min = props.minWidth?.[index] ?? 1;
+    // 最小幅チェック
+    let width = e.clientX - newResizeTarget.targetX;
+    if (width < min) width = min;
+    newResizeTarget.width = width;
 
-      let width = e.clientX - newResizeTarget.targetX;
-      if (width < min) width = min;
-      newResizeTarget.width = width;
-
-      setItemWidth((oldItemWidth) => {
-        const newItemWidth = [...oldItemWidth];
-        newItemWidth[index] = newResizeTarget.width;
-        return newItemWidth;
-      });
-
-      props.onResize(resizeTarget.index, resizeTarget.width - 3, false);
-
-      return newResizeTarget;
+    // 更新
+    setResizeTarget(newResizeTarget);
+    setItemWidth((oldItemWidth) => {
+      const newItemWidth = [...oldItemWidth];
+      newItemWidth[index] = newResizeTarget.width;
+      return newItemWidth;
     });
+    props.onResize(newResizeTarget.index, width, false);
   }
   function onMouseUp(e: MouseEvent) {
     if (resizeTarget == null) return;
-    props.onResize(resizeTarget.index, resizeTarget.width - 3, true);
+    props.onResize(resizeTarget.index, resizeTarget.width, true);
 
     setResizeTarget(undefined);
   }
@@ -82,7 +79,7 @@ export function ResizableAlign(props: {
       <div
         key={i}
         className={`resizable-align-item`}
-        style={{ width: itemWidth[i], minWidth: props.minWidth?.[i] }} //
+        style={{ width: itemWidth[i] + 3, minWidth: props.minWidth?.[i] }}
       >
         {child}
         <div
@@ -97,7 +94,7 @@ export function ResizableAlign(props: {
       key={-1}
       className="resizable-align-item resizable-align-end"
       style={{
-        width: itemWidth[resizeCount],
+        width: itemWidth[resizeCount] + 3,
         minWidth: props.minWidth?.[resizeCount],
       }} //
     >

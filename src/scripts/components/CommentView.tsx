@@ -85,9 +85,7 @@ export function CommentView(props: CommentViewProps) {
 
   function onResize(index: number, width: number, resized: boolean) {
     setColumnWidthMap((oldColumnWidthMap) => {
-      const newValue = { ...oldColumnWidthMap };
-      newValue[columnKeys[index]].width = width;
-      return newValue;
+      return { ...oldColumnWidthMap, [columnKeys[index]]: { width: width } };
     });
     if (resized) dispatch(resizeHeader([columnKeys[index], width]));
   }
@@ -147,10 +145,7 @@ function RowView(props: {
   itemWidth: ColumnsStorage;
   setHeight: (index: number, height: number) => void;
   style: React.CSSProperties;
-  // columnsOption: ColumnsStorage;
 }) {
-  console.log(props.itemWidth);
-
   const rowRef = useRef<HTMLDivElement>();
   const index = props.index;
 

@@ -18,7 +18,7 @@
   display: flex;
   word-break: break-all;
   align-items: center;
-  border-top: 1px dashed red;
+  border-top: 1px dashed gray;
 }
 .comment-view-row > div {
   padding: 2px;
