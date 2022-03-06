@@ -65,6 +65,7 @@ function ReactWindowTest() {
       <Resizer className="content">
         {(size) => (
           <CommentView
+            headerHeight={30}
             width={size.width}
             height={size.height - (menuHeight + bottomPading)}
           />

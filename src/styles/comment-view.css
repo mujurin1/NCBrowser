@@ -8,6 +8,11 @@
   color: black;
 }
 
+/* コメントビューヘッダー全体 */
+.comment-view-header {
+  background-color: bisque;
+}
+
 /* コメントビューヘッダー 要素 */
 .comment-view-header-item {
   white-space: nowrap;
@@ -19,9 +24,6 @@
   word-break: break-all;
   align-items: center;
   border-top: 1px dashed gray;
-}
-.comment-view-row > div {
-  padding: 2px;
 }
 
 /* 各列のアイテム */
@@ -36,6 +38,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 .comment-view-row-time {
   text-align: center;
@@ -43,6 +46,7 @@
 .comment-view-row-comment {
   flex-grow: 1;
   height: auto;
+  min-width: 55px;
 }
 
 /* アイコン画像 */
