@@ -2,13 +2,19 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 
 import "./resizable-align.css";
 
-export function ResizableAlign(props: {
+export type ResizableAlignProps = {
   onResize: (index: number, width: number, resized: boolean) => void;
   children: React.ReactElement[];
   height: number;
   itemWidth: number[];
-  minWidth?: number[];
-}) {
+  minWidth: number[];
+  style: React.CSSProperties;
+};
+
+// export const ResizableAlign = React.memo(_resizableAlign);
+
+// function _resizableAlign(props: ResizableAlignProps) {
+export function ResizableAlign(props: ResizableAlignProps) {
   const [itemWidth, setItemWidth] = useState<number[]>(props.itemWidth);
   const [resizeTarget, setResizeTarget] = useState<{
     index: number;
@@ -18,8 +24,13 @@ export function ResizableAlign(props: {
   }>();
 
   useEffect(() => {
+    console.log("mount");
+    return () => console.log("unmount");
+  }, []);
+
+  useEffect(() => {
     setItemWidth(props.itemWidth);
-  }, props.itemWidth);
+  }, [props.itemWidth]);
 
   let childElement: React.ReactElement[] = [];
 
@@ -27,6 +38,7 @@ export function ResizableAlign(props: {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) {
+    // e.stopPropagation();
     const target = e.currentTarget.parentElement;
 
     setResizeTarget({
@@ -41,7 +53,7 @@ export function ResizableAlign(props: {
     const newResizeTarget = { ...resizeTarget };
 
     const index = newResizeTarget.index;
-    const min = props.minWidth?.[index] ?? 1;
+    const min = props.minWidth[index];
     // 最小幅チェック
     let width = e.clientX - newResizeTarget.targetX;
     if (width < min) width = min;
@@ -57,6 +69,8 @@ export function ResizableAlign(props: {
     props.onResize(newResizeTarget.index, width, false);
   }
   function onMouseUp(e: MouseEvent) {
+    console.log(`mouseUp: ${resizeTarget}`);
+
     if (resizeTarget == null) return;
     props.onResize(resizeTarget.index, resizeTarget.width, true);
 
@@ -79,7 +93,7 @@ export function ResizableAlign(props: {
       <div
         key={i}
         className={`resizable-align-item`}
-        style={{ width: itemWidth[i] + 3, minWidth: props.minWidth?.[i] }}
+        style={{ width: itemWidth[i] + 3, minWidth: props.minWidth[i] }}
       >
         {child}
         <div
@@ -95,15 +109,18 @@ export function ResizableAlign(props: {
       className="resizable-align-item resizable-align-end"
       style={{
         width: itemWidth[resizeCount] + 3,
-        minWidth: props.minWidth?.[resizeCount],
-      }} //
+        minWidth: props.minWidth[resizeCount],
+      }}
     >
       {props.children[resizeCount]}
     </div>
   );
 
   return (
-    <div className="resizable-align" style={{ height: props.height }}>
+    <div
+      className="resizable-align"
+      style={{ ...props.style, height: props.height }}
+    >
       {childElement}
     </div>
   );

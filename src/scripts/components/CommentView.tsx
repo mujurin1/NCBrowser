@@ -1,18 +1,12 @@
-import { width } from "@mui/system";
 import { createSelector } from "@reduxjs/toolkit";
-import { iteratorSymbol } from "immer/dist/internal";
 import React, {
-  useContext,
+  SetStateAction,
+  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import {
-  GridChildComponentProps,
-  VariableSizeGrid,
-  VariableSizeList,
-} from "react-window";
+import { VariableSizeList } from "react-window";
 import {
   AppState,
   nicoChatSelector,
@@ -23,18 +17,16 @@ import {
 } from "../app/store";
 import {
   columnKeys,
-  ColumnKeysType,
   columnNames,
   ColumnsStorage,
-  ColumnStorage,
-  CommentViewStorage,
 } from "../srorage/ncbOptionsType";
 import { calcDateToFomat } from "../util/funcs";
 
 import "../../styles/comment-view.css";
 import { defaultIconUrl } from "../util/nico";
-import { ResizableAlign } from "./ResizableAlign";
+import { ResizableAlign, ResizableAlignProps } from "./ResizableAlign";
 import { resizeHeader } from "../features/storageSlice";
+import { VariableSizeListWithHeader } from "./VariableSizeListWithHeader";
 
 /**
  * CommentViewに表示する情報
@@ -61,6 +53,9 @@ export type CommentViewProps = {
   height: number;
 };
 
+const headerHeight = 30;
+const minWidth = [40, 10, 60, 30, 50];
+
 export function CommentView(props: CommentViewProps) {
   const dispatch = useTypedDispatch();
   const listRef = useRef<VariableSizeList<CommentViewItem[]>>();
@@ -68,6 +63,11 @@ export function CommentView(props: CommentViewProps) {
   const option = useTypedSelector(
     (state) => storageSelector(state).ncbOptions.commentView
   );
+  const itemWidth = React.useMemo(
+    () => columnKeys.map((key) => option.columns[key].width),
+    [option]
+  );
+
   const [rowHeightMap, setRowHeightMap] = useState<Record<number, number>>({});
   const [columnWidthMap, setColumnWidthMap] = useState<ColumnsStorage>();
 
@@ -83,27 +83,27 @@ export function CommentView(props: CommentViewProps) {
     listRef.current.resetAfterIndex(index);
   };
 
-  function onResize(index: number, width: number, resized: boolean) {
-    setColumnWidthMap((oldColumnWidthMap) => {
-      return { ...oldColumnWidthMap, [columnKeys[index]]: { width: width } };
-    });
-    if (resized) dispatch(resizeHeader([columnKeys[index], width]));
-  }
+  const onResize = useCallback(
+    (index: number, width: number, resized: boolean) => {
+      setColumnWidthMap((oldColumnWidthMap) => {
+        return { ...oldColumnWidthMap, [columnKeys[index]]: { width: width } };
+      });
+      if (resized) dispatch(resizeHeader([columnKeys[index], width]));
+    },
+    [columnKeys, dispatch, setColumnWidthMap]
+  );
 
   const getSize = (index: number) =>
     rowHeightMap[index] ?? option.columns.icon.width;
 
-  const headerWidth = 30;
-  const itemWidth = columnKeys.map((key) => option.columns[key].width);
-  const minWidth = [40, 10, 60, 30, 50];
-
-  return (
-    <div className="comment-view">
+  const header = React.useMemo(
+    () => (
       <ResizableAlign
         onResize={onResize}
         itemWidth={itemWidth}
         height={30}
         minWidth={minWidth}
+        style={{ position: "sticky", top: 0 }}
       >
         {columnKeys.map((key) => (
           <div key={key} className="comment-view-header-item">
@@ -111,21 +111,72 @@ export function CommentView(props: CommentViewProps) {
           </div>
         ))}
       </ResizableAlign>
-      <VariableSizeList<CommentViewItem[]>
-        ref={listRef}
+    ),
+    [itemWidth, minWidth, columnKeys, columnNames, onResize]
+  );
+
+  return (
+    <div className="comment-view">
+      <VariableSizeListWithHeader
+        _ref={listRef}
         className="comment-view-table"
         itemCount={itemData.length}
         width={props.width}
-        height={props.height - headerWidth}
+        height={props.height - headerHeight}
         itemSize={getSize}
         itemData={itemData}
+        headerHeight={headerHeight}
+        header={header}
       >
         {(arg) => (
           <RowView
             index={arg.index}
             item={arg.data[arg.index]}
             setHeight={setHeight}
-            style={arg.style}
+            style={{ ...arg.style, transform: `translateY(${headerHeight}px)` }}
+            itemWidth={columnWidthMap}
+          />
+        )}
+      </VariableSizeListWithHeader>
+    </div>
+  );
+  return (
+    <div className="comment-view">
+      <VariableSizeList<CommentViewItem[]>
+        ref={listRef}
+        className="comment-view-table"
+        itemCount={itemData.length}
+        width={props.width}
+        height={props.height - headerHeight}
+        itemSize={getSize}
+        itemData={itemData}
+        innerElementType={(props: { children: any }) => {
+          return (
+            <>
+              <ResizableAlign
+                onResize={onResize}
+                itemWidth={itemWidth}
+                height={30}
+                minWidth={minWidth}
+                style={{ position: "sticky", top: 0 }}
+              >
+                {columnKeys.map((key) => (
+                  <div key={key} className="comment-view-header-item">
+                    {columnNames[key]}
+                  </div>
+                ))}
+              </ResizableAlign>
+              {props.children}
+            </>
+          );
+        }}
+      >
+        {(arg) => (
+          <RowView
+            index={arg.index}
+            item={arg.data[arg.index]}
+            setHeight={setHeight}
+            style={{ ...arg.style, transform: `translateY(${headerHeight}px)` }}
             itemWidth={columnWidthMap}
           />
         )}
