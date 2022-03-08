@@ -65,6 +65,11 @@ export function CommentView(props: CommentViewProps) {
   const option = useTypedSelector(
     (state) => storageSelector(state).ncbOptions.commentView
   );
+  const isButtom = useTypedSelector(
+    (state) => storageSelector(state).ncbOptions.isButtom
+  );
+  const [lastItemCnt, setLastItemCnt] = useState(0);
+
   // 各カラムの幅
   const columnsWidth = React.useMemo(
     () => columnKeys.map((key) => option.columns[key].width),
@@ -96,6 +101,15 @@ export function CommentView(props: CommentViewProps) {
   const listRef = useRef<VariableSizeList<CommentViewItem[]>>();
   // ビューに表示するアイテム
   const itemData = useTypedSelector(commentViewItemSelector);
+
+  useEffect(() => {
+    if (lastItemCnt !== itemData.length) setLastItemCnt(itemData.length);
+  }, [itemData]);
+
+  useEffect(() => {
+    if (isButtom)
+      listRef.current.scrollTo(lastItemCnt * option.columns.icon.width);
+  }, [lastItemCnt]);
 
   // 各ビューアイテムの高さ
   const [itemHeightMap, setItemHeightMap] = useState<Record<number, number>>(

@@ -233,17 +233,13 @@ function operatorCommentParse(chat: ChatMeta) {
   }
 }
 
-/*
+/**
  * 放送者コメントの一部はHTMLタグなので、ちゃんとする\
- * <u><font color="#00CCFF"><a href="URL" target="_blank">lv**</a></font></u>
+ * 改行を含む文字 => a<br>a
+ * lv*等の特定の文字 => <u><font color="#00CCFF"><a href="URL" target="_blank">lv**</a></font></u>
  * @param chat
  * @returns 表示テキスト
  */
-const parser = new DOMParser();
 function liverCommentParse(chat: ChatMeta): string {
-  if (chat.comment.indexOf(`<`) >= 0) {
-    const f = parser.parseFromString(chat.comment, "text/html");
-    return f.getElementsByTagName("a")[0].innerText;
-  }
-  return chat.comment;
+  return chat.comment.replace(/<[^>]*>/g, "");
 }

@@ -1,15 +1,7 @@
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import React, { useCallback, useLayoutEffect } from "react";
 
 import "./resizable-align.css";
-import {
-  ResizableAlignState,
-  useResizableAlignState,
-} from "./useResizableAlignState";
+import { ResizableAlignState } from "./useResizableAlignState";
 
 export type ResizableAlignProps = {
   className: string;

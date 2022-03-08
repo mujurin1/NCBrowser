@@ -15,7 +15,11 @@ import {
   useTypedSelector,
 } from "../app/store";
 import { changeLive } from "../features/nicoLiveSlice";
-import { loadAllStorageThunk, switchSpeech } from "../features/storageSlice";
+import {
+  loadAllStorageThunk,
+  switchButton,
+  switchSpeech,
+} from "../features/storageSlice";
 
 import "../../styles/menu-bar.css";
 
@@ -27,9 +31,7 @@ export const MenuBar = (props: { className?: string }) => {
   const nicoLiveState = useTypedSelector(
     (state) => nicoLiveSelector(state).state
   );
-  const yomiage = useTypedSelector(
-    (state) => storageSelector(state).ncbOptions.yomiage
-  );
+  const option = useTypedSelector((state) => storageSelector(state).ncbOptions);
 
   const connect = () => {
     let idIndex: number;
@@ -87,17 +89,27 @@ export const MenuBar = (props: { className?: string }) => {
           label="読み上げ"
           control={
             <Switch
-              checked={yomiage.on}
+              checked={option.yomiage.on}
               onChange={() => {
-                if (yomiage.on && yomiage.useSpeechApi === "ブラウザ読み上げ") {
+                if (
+                  option.yomiage.on &&
+                  option.yomiage.useSpeechApi === "ブラウザ読み上げ"
+                ) {
                   BrowserSpeechAPI.reset();
                 }
-                dispatch(switchSpeech(!yomiage.on));
+                dispatch(switchSpeech(!option.yomiage.on));
               }}
             />
           }
         />
       </FormGroup>
+      <Button
+        variant="contained"
+        onClick={() => dispatch(switchButton(!option.isButtom))}
+        style={{ fontSize: 23 }}
+      >
+        {option.isButtom ? "🌠" : "💫"}
+      </Button>
       &ensp;
       <Button
         variant="contained"

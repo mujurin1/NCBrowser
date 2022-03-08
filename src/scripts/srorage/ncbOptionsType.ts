@@ -19,6 +19,7 @@ export type ColumnKeysType = typeof columnKeys[number];
 /** オプションストレージ項目 */
 export type NcbOptionsStorage = {
   yomiage: YomiageStorage;
+  isButtom: boolean;
   commentView: CommentViewStorage;
 };
 // ================= 読み上げ =================
@@ -43,6 +44,7 @@ export const initialNcbOptions: NcbOptionsStorage = {
     on: false,
     useSpeechApi: "ブラウザ読み上げ",
   },
+  isButtom: true,
   commentView: {
     columns: {
       no: {

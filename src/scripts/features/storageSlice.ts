@@ -67,6 +67,9 @@ const storageSlice = createSlice({
     switchSpeech(state, action: PayloadAction<boolean>) {
       state.storage.ncbOptions.yomiage.on = action.payload;
     },
+    switchButton(state, action: PayloadAction<boolean>) {
+      state.storage.ncbOptions.isButtom = action.payload;
+    },
     changeSpeechApi(state, action: PayloadAction<typeof speechApis[number]>) {
       state.storage.ncbOptions.yomiage.useSpeechApi = action.payload;
     },
@@ -114,6 +117,11 @@ export const storageReducer = storageSlice.reducer;
 export const switchSpeech = createUpdateThunk(
   "switchSpeech",
   storageSlice.actions.switchSpeech
+);
+// ActionThunk
+export const switchButton = createUpdateThunk(
+  "switchButton",
+  storageSlice.actions.switchButton
 );
 export const changeSpeechApi = createUpdateThunk(
   "changeSpeechApi",
